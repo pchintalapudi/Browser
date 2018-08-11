@@ -1,0 +1,58 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Aug 10, 2018, 6:25:23 PM
+    Author     : prem
+*/
+
+* {
+    -fx-background-color:transparent;
+}
+
+.button, .tab {
+    -fx-background-color:transparent;
+}
+
+.tab:selected {
+    -fx-background-color:#0088ff44;
+}
+
+.button:hover, .tab:hover {
+    -fx-background-color:#0088ff88;
+}
+
+.button:pressed, .tab:hover {
+    -fx-background-color:#0088ffff;
+}
+
+.close-button {
+    -fx-background-color:transparent;
+}
+
+.close-button:hover {
+    -fx-background-color:#ff000088;
+}
+
+.close-button:pressed {
+    -fx-background-color:red;
+}
+
+.window-button {
+    -fx-background-color:transparent;
+}
+
+.window-button:hover {
+    -fx-background-color:#00000022;
+}
+
+.window-button:pressed {
+    -fx-background-color:#00000044;
+}
+
+.root {
+    -fx-border-color:blue;
+    -fx-border-width:1;
+}
