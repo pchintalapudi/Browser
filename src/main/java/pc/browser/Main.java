@@ -5,8 +5,6 @@
  */
 package pc.browser;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.animation.KeyFrame;
@@ -22,7 +20,7 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -42,9 +40,10 @@ public class Main {
     private AnchorPane root;
     @FXML
     private HBox tabBar;
+    @FXML
+    private TextField omnibar;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
-    private final Map<TabController, Parent> views = new HashMap<>();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
     private final ExecutorService async = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r);
@@ -64,6 +63,7 @@ public class Main {
             if (s != null) {
                 s.pseudoClassStateChanged(SELECTED, true);
             }
+            switchToTab(s);
         });
         newTab();
         KeyCodeCombination newTab = new KeyCodeCombination(KeyCode.T, KeyCombination.SHORTCUT_DOWN);
@@ -89,7 +89,6 @@ public class Main {
     private void closeWindow() {
 //        tabs.clear();
         fade(() -> root.getScene().getWindow().hide(), true);
-        animate.getKeyFrames().remove(1);
         animate.play();
     }
 
@@ -111,6 +110,24 @@ public class Main {
     @FXML
     private void minimize() {
         fade(() -> ((Stage) root.getScene().getWindow()).setIconified(true), true);
+        if (initX > -1) {
+//            stageX().setValue(initX);
+            stageY().setValue(initY);
+//            stageWidth().setValue(initW);
+            stageHeight().setValue(initH);
+        }
+        initX = stageX().getValue();
+        initY = stageY().getValue();
+        initW = stageWidth().getValue();
+        initH = stageHeight().getValue();
+        animate.getKeyFrames().add(new KeyFrame(Duration.millis(300), e -> {
+            stageX().setValue(initX);
+            stageY().setValue(initY);
+        },
+                //                    new KeyValue(stageX(), initX + initW * 0.1),
+                new KeyValue(stageY(), initY + initH * 0.1)));
+//                    new KeyValue(stageWidth(), initW * 0.9),
+//                    new KeyValue(stageHeight(), initH * 0.9)));
         animate.play();
         ((Stage) root.getScene().getWindow()).iconifiedProperty().removeListener(iconifiedListener);
         ((Stage) root.getScene().getWindow()).iconifiedProperty().addListener(iconifiedListener);
@@ -120,27 +137,7 @@ public class Main {
 
     private void fade(Runnable onFinish, boolean out) {
         animate.stop();
-        if (initX > -1) {
-//            stageX().setValue(initX);
-            stageY().setValue(initY);
-//            stageWidth().setValue(initW);
-            stageHeight().setValue(initH);
-        }
         animate.getKeyFrames().setAll(new KeyFrame(Duration.millis(300), e -> onFinish.run(), new KeyValue(stageOpacity(), out ? 0d : 1d)));
-        if (out) {
-            initX = stageX().getValue();
-            initY = stageY().getValue();
-            initW = stageWidth().getValue();
-            initH = stageHeight().getValue();
-            animate.getKeyFrames().add(new KeyFrame(Duration.millis(300), e -> {
-                stageX().setValue(initX);
-                stageY().setValue(initY);
-            },
-//                    new KeyValue(stageX(), initX + initW * 0.1),
-                    new KeyValue(stageY(), initY + initH * 0.1)));
-//                    new KeyValue(stageWidth(), initW * 0.9),
-//                    new KeyValue(stageHeight(), initH * 0.9)));
-        }
     }
 
     private WritableValue<Double> stageOpacity, stageX, stageY, stageWidth, stageHeight;
@@ -249,8 +246,15 @@ public class Main {
                 focusedTab.set(tabIndex == 0 ? tabs.get(1) : tabs.get(tabIndex - 1));
             }
             tabs.remove(tab);
-            views.remove(tab);
         }
+    }
+
+    private void switchToTab(TabController tab) {
+    }
+
+    @FXML
+    private void requestFocus() {
+        root.requestFocus();
     }
 
 //    private void newWindow() {

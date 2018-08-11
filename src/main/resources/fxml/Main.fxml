@@ -10,65 +10,65 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" fx:id="root" prefHeight="900.0" prefWidth="1600.0" styleClass="root" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
+<AnchorPane id="AnchorPane" fx:id="root" onMouseClicked="#requestFocus" prefHeight="900.0" prefWidth="1600.0" styleClass="root" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
     <children>
         <VBox alignment="TOP_CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-            <HBox alignment="CENTER_RIGHT">
-               <children>
-                      <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
-                          <children>
-                              <HBox fx:id="tabBar" alignment="CENTER_LEFT" prefHeight="40.0">
-                                  <padding>
-                                      <Insets left="10.0" />
-                                  </padding>
-                              </HBox>
-                              <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
-                                  <children>
-                                      <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                                          <children>
-                                              <Button mnemonicParsing="false" onAction="#newTab" prefHeight="25.0" prefWidth="25.0" style="-fx-border-color: #0088ff;" />
-                                          </children>
-                                      </HBox>
-                                  </children>
-                              </HBox>
-                          </children>
-                      </HBox>
-                          <HBox HBox.hgrow="NEVER">
-                              <children>
-                                  <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#minimize" prefWidth="60.0" styleClass="window-button">
-                                      <children>
-                                          <Group>
-                                              <children>
-                                                  <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="-" />
-                                              </children>
-                                          </Group>
-                                      </children>
-                                  </StackPane>
-                                  <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#sizing" prefWidth="60.0" styleClass="window-button">
-                                      <children>
-                                          <Group translateY="2.0">
-                                              <children>
-                                                  <Label text="⃞" />
-                                                  <Label text="⃞" />
-                                              </children>
-                                          </Group>
-                                      </children>
-                                  </StackPane>
-                                  <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#closeWindow" prefWidth="60.0" styleClass="close-button">
-                                      <children>
-                                          <Group>
-                                              <children>
-                                                  <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="×" />
-                                              </children>
-                                          </Group>
-                                      </children>
-                                  </StackPane>
-                              </children>
-                          </HBox>
-               </children>
-            </HBox>
-                <VBox maxHeight="100.0" prefWidth="100.0">
+                <HBox alignment="CENTER_RIGHT">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <HBox fx:id="tabBar" alignment="CENTER_LEFT" prefHeight="40.0">
+                                    <padding>
+                                        <Insets left="10.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <Button mnemonicParsing="false" onAction="#newTab" prefHeight="25.0" prefWidth="25.0" style="-fx-border-color: #0088ff;" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </HBox>
+                            </children>
+                        </HBox>
+                        <HBox HBox.hgrow="NEVER">
+                            <children>
+                                <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#minimize" prefWidth="60.0" styleClass="window-button">
+                                    <children>
+                                        <Group>
+                                            <children>
+                                                <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="-" />
+                                            </children>
+                                        </Group>
+                                    </children>
+                                </StackPane>
+                                <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#sizing" prefWidth="60.0" styleClass="window-button">
+                                    <children>
+                                        <Group translateY="2.0">
+                                            <children>
+                                                <Label text="⃞" />
+                                                <Label text="⃞" />
+                                            </children>
+                                        </Group>
+                                    </children>
+                                </StackPane>
+                                <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#closeWindow" prefWidth="60.0" styleClass="close-button">
+                                    <children>
+                                        <Group>
+                                            <children>
+                                                <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="×" />
+                                            </children>
+                                        </Group>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
+                <VBox maxHeight="100.0" prefWidth="100.0" styleClass="util-bar">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
@@ -80,7 +80,7 @@
                                         <Button fx:id="backButton" mnemonicParsing="false" onAction="#back" text="🡨" />
                                         <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#forward" text="🡪" />
                                         <Button fx:id="reloadButton" mnemonicParsing="false" onAction="#reload" text="↻" />
-                                        <TextField fx:id="urlBar" onAction="#load" HBox.hgrow="ALWAYS" />
+                                        <TextField fx:id="omnibar" onAction="#load" styleClass="omnibar" HBox.hgrow="ALWAYS" />
                                     </children>
                                 </HBox>
                                 <HBox fx:id="extensionButtons" alignment="CENTER_RIGHT" prefWidth="200.0" />

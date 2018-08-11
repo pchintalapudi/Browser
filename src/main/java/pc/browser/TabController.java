@@ -7,22 +7,16 @@ package pc.browser;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 
 /**
  * FXML Controller class
@@ -32,7 +26,7 @@ import javafx.scene.layout.AnchorPane;
 public class TabController extends AnchorPane {
 
     @FXML
-    private AnchorPane AnchorPane;
+    private HBox tabContent;
     @FXML
     private ImageView icon;
     @FXML
@@ -47,7 +41,14 @@ public class TabController extends AnchorPane {
         } catch (IOException ex) {
             Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        tabTitle.textProperty().bind(data.titleProperty);
+        icon.imageProperty().addListener((o, b, s) -> {
+            if (s == null) {
+                tabContent.getChildren().remove(icon);
+            } else {
+                tabContent.getChildren().add(icon);
+            }
+        });
+        tabContent.getChildren().remove(icon);
     }
 
     @FXML
@@ -65,7 +66,9 @@ public class TabController extends AnchorPane {
 
     @FXML
     private void select() {
-        this.onSelect.run();
+        if (onSelect != null) {
+            this.onSelect.run();
+        }
     }
 
     private Runnable onSelect;
@@ -76,76 +79,11 @@ public class TabController extends AnchorPane {
         }
     }
 
-    private final TabData data = new TabData();
-
-    public TabData getData() {
-        return data;
+    public void setTitle(String title) {
+        this.tabTitle.setText(title);
     }
-
-    public static class TabData {
-
-        private final ReadOnlyObjectWrapper<VisitedData> current = new ReadOnlyObjectWrapper(new VisitedData(null));
-        private final StringProperty titleProperty = new SimpleStringProperty("New Tab");
-
-        private final ObservableList<VisitedData> history = FXCollections.observableArrayList();
-        private final ObservableList<VisitedData> future = FXCollections.observableArrayList();
-
-        {
-            current.addListener((o, b, s) -> {
-                if (s != null) {
-
-                } else {
-                    titleProperty.set("New Tab");
-                }
-            });
-        }
-
-        public ReadOnlyObjectProperty<VisitedData> currentDataProperty() {
-            return current.getReadOnlyProperty();
-        }
-
-        public void navigated(VisitedData vd) {
-            history.add(0, current.get());
-            future.clear();
-            current.set(vd);
-        }
-
-        public void shift(VisitedData target) {
-            int index = history.indexOf(target);
-            if (index > -1) {
-                history.subList(index + 1, history.size()).forEach(vd -> future.add(0, vd));
-                history.subList(index, history.size()).clear();
-                current.set(target);
-            } else if ((index = future.indexOf(target)) > -1) {
-                future.subList(0, index).forEach(vd -> history.add(0, vd));
-                future.subList(0, index + 1).clear();
-                current.set(target);
-            }
-        }
-
-        public static class VisitedData {
-
-            private final URL url;
-            private String title = "";
-            private final List<BiConsumer<String, String>> titleChangeListeners = new ArrayList<>();
-
-            public VisitedData(URL url) {
-                this.url = url;
-            }
-
-            public URL getUrl() {
-                return url;
-            }
-
-            public String getTitle() {
-                return title;
-            }
-
-            public void setTitle(String title) {
-                String prev = this.title;
-                this.title = title;
-                titleChangeListeners.forEach(tcl -> tcl.accept(prev, title));
-            }
-        }
-    }
+    
+    private URL current;
+    private String enteredText;
+    private final BooleanProperty loadingProperty = new SimpleBooleanProperty();
 }

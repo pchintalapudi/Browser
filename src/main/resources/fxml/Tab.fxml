@@ -6,19 +6,23 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 
-
-<fx:root id="AnchorPane" styleClass="tab" prefHeight="40.0" prefWidth="150.0" type="AnchorPane" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/9.0.1" onMousePressed="#select">
+<fx:root id="AnchorPane" fx:id="root" minWidth="0.0" onMousePressed="#select" prefHeight="40.0" prefWidth="150.0" styleClass="tab" type="AnchorPane" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <HBox alignment="CENTER_RIGHT" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <HBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
+                <HBox fx:id="tabContent" alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <ImageView fx:id="icon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="NEVER" />
-                        <Label text="Tab Title" HBox.hgrow="ALWAYS" fx:id="tabTitle"/>
+                        <ImageView fx:id="icon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" />
+                  <StackPane alignment="CENTER_LEFT" cache="true" cacheHint="QUALITY" HBox.hgrow="ALWAYS">
+                     <children>
+                              <Label fx:id="tabTitle" text="Tab Title" />
+                     </children>
+                  </StackPane>
                     </children>
                 </HBox>
-                <Button mnemonicParsing="false" onAction="#close" style="-fx-background-radius: 50;" text="X" HBox.hgrow="NEVER" styleClass="close-button"/>
+                <Button cache="true" cacheHint="QUALITY" mnemonicParsing="false" onAction="#close" styleClass="close-button" text="X" HBox.hgrow="NEVER" />
             </children>
             <padding>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
