@@ -12,8 +12,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -237,13 +235,15 @@ public class Main {
 
     @FXML
     private void reload() {
+        load(focusedTab.get().getCurrent(), null);
     }
 
-    private void load(URL url) {
+    private void load(URL url, String original) {
         TabController current = focusedTab.get();
         current.getLoadingProperty().set(true);
         current.setEnteredText(null);
-        current.getLog().commit(current.getCurrent(), current.getTitle());
+        current.setCurrent(url);
+        Platform.runLater(() -> omnibar.setText(url.toExternalForm()));
         async.submit(() -> {
             try {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
@@ -252,7 +252,7 @@ public class Main {
                 Parent html = DOMNodeView.map(document.body());
                 Platform.runLater(() -> content.setContent(html));
             } catch (IOException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                safety(original);
             }
         });
     }
@@ -274,10 +274,20 @@ public class Main {
             try {
                 url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(omnibar.getText(), "utf-8") + "&sourceid=browser&ie=UTF-8");
             } catch (MalformedURLException | UnsupportedEncodingException ex1) {
-                throw new RuntimeException(ex);
+                throw new RuntimeException(ex1);
             }
         }
-        load(url);
+        TabController current = focusedTab.get();
+        current.getLog().commit(current.getCurrent(), current.getTitle());
+        load(url, text);
+    }
+
+    private void safety(String original) {
+        try {
+            URL url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(omnibar.getText(), "utf-8") + "&sourceid=browser&ie=UTF-8");
+        } catch (MalformedURLException | UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @FXML
