@@ -5,11 +5,19 @@
  */
 package pc.browser;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -20,6 +28,8 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -29,6 +39,9 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import pc.browser.render.DOMNodeView;
 
 /**
  *
@@ -42,6 +55,8 @@ public class Main {
     private HBox tabBar;
     @FXML
     private TextField omnibar;
+    @FXML
+    private ScrollPane content;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -224,8 +239,45 @@ public class Main {
     private void reload() {
     }
 
+    private void load(URL url) {
+        TabController current = focusedTab.get();
+        current.getLoadingProperty().set(true);
+        current.setEnteredText(null);
+        current.getLog().commit(current.getCurrent(), current.getTitle());
+        async.submit(() -> {
+            try {
+                Document document = Jsoup.connect(url.toExternalForm()).get();
+                System.out.println(document.head().getElementsByTag("title"));
+                Platform.runLater(() -> current.setTitle(document.head().getElementsByTag("title").text()));
+                Parent html = DOMNodeView.map(document.body());
+                Platform.runLater(() -> content.setContent(html));
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }
+
     @FXML
     private void load() {
+        URL url;
+        String text = omnibar.getText();
+        try {
+            String text0 = text;
+            if (!text0.contains("www.")) {
+                text0 = "www." + text0;
+            }
+            if (!text0.contains("http://")) {
+                text0 = "http://" + text0;
+            }
+            url = new URL(text0);
+        } catch (MalformedURLException ex) {
+            try {
+                url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(omnibar.getText(), "utf-8") + "&sourceid=browser&ie=UTF-8");
+            } catch (MalformedURLException | UnsupportedEncodingException ex1) {
+                throw new RuntimeException(ex);
+            }
+        }
+        load(url);
     }
 
     @FXML

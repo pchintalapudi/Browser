@@ -5,17 +5,16 @@
  */
 package pc.browser;
 
-import java.io.IOException;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.beans.value.WritableValue;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import pc.browser.resources.Resources;
 
 /**
  *
@@ -24,11 +23,10 @@ import javafx.util.Duration;
 public class Browser extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) {
         primaryStage.initStyle(StageStyle.UNDECORATED);
         primaryStage.setOpacity(0);
-        FXMLLoader loader = new FXMLLoader(Browser.class.getResource("/fxml/Main.fxml"));
-        primaryStage.setScene(new Scene(loader.load(), 1600, 900));
+        primaryStage.setScene(new Scene(Resources.directLoad("Main.fxml"), 1600, 900));
         Timeline showTimeline = new Timeline();
         WritableValue<Double> stageOpacity = new WritableValue<Double>() {
             @Override

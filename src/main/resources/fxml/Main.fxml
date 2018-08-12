@@ -4,6 +4,7 @@
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
@@ -86,10 +87,9 @@
                                 <HBox fx:id="extensionButtons" alignment="CENTER_RIGHT" prefWidth="200.0" />
                             </children>
                         </HBox>
-                        <HBox />
                     </children>
                 </VBox>
-                <StackPane fx:id="content" prefHeight="150.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                <ScrollPane fx:id="content" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
             </children>
         </VBox>
     </children>

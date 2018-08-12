@@ -10,13 +10,17 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import pc.browser.resources.Resources;
 
 /**
  * FXML Controller class
@@ -33,7 +37,7 @@ public class TabController extends AnchorPane {
     private Label tabTitle;
 
     public TabController() {
-        FXMLLoader loader = new FXMLLoader(TabController.class.getResource("/fxml/Tab.fxml"));
+        FXMLLoader loader = Resources.getFXMLLoader("Tab.fxml");
         loader.setRoot(this);
         loader.setController(this);
         try {
@@ -83,7 +87,59 @@ public class TabController extends AnchorPane {
         this.tabTitle.setText(title);
     }
     
+    public String getTitle() {
+        return tabTitle.getText();
+    }
+
     private URL current;
     private String enteredText;
+    private ObjectProperty<Parent> sceneGraphProperty = new SimpleObjectProperty<>(Resources.directLoad("NullPage.fxml"));
     private final BooleanProperty loadingProperty = new SimpleBooleanProperty();
+    private final TabLog log = new TabLog();
+
+    /**
+     * @return the current
+     */
+    public URL getCurrent() {
+        return current;
+    }
+
+    /**
+     * @param current the current to set
+     */
+    public void setCurrent(URL current) {
+        this.current = current;
+    }
+
+    /**
+     * @return the enteredText
+     */
+    public String getEnteredText() {
+        return enteredText;
+    }
+
+    /**
+     * @param enteredText the enteredText to set
+     */
+    public void setEnteredText(String enteredText) {
+        this.enteredText = enteredText;
+    }
+    
+    public ObjectProperty<Parent> sceneGraphProperty() {
+        return sceneGraphProperty;
+    }
+
+    /**
+     * @return the loadingProperty
+     */
+    public BooleanProperty getLoadingProperty() {
+        return loadingProperty;
+    }
+
+    /**
+     * @return the log
+     */
+    public TabLog getLog() {
+        return log;
+    }
 }

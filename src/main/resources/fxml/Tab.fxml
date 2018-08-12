@@ -15,11 +15,11 @@
                 <HBox fx:id="tabContent" alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
                     <children>
                         <ImageView fx:id="icon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" />
-                  <StackPane alignment="CENTER_LEFT" cache="true" cacheHint="QUALITY" HBox.hgrow="ALWAYS">
-                     <children>
-                              <Label fx:id="tabTitle" text="Tab Title" />
-                     </children>
-                  </StackPane>
+                        <StackPane alignment="CENTER_LEFT" cache="true" cacheHint="QUALITY" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Label fx:id="tabTitle" text="New Tab" />
+                            </children>
+                        </StackPane>
                     </children>
                 </HBox>
                 <Button cache="true" cacheHint="QUALITY" mnemonicParsing="false" onAction="#close" styleClass="close-button" text="X" HBox.hgrow="NEVER" />

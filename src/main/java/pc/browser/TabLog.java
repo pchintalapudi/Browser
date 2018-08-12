@@ -11,6 +11,7 @@ import javafx.beans.binding.ListBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Pair;
+import org.fxmisc.easybind.EasyBind;
 
 /**
  *
@@ -20,18 +21,6 @@ public class TabLog {
 
     private final ObservableList<Pair<URL, String>> history = FXCollections.observableArrayList();
     private final ObservableList<Pair<URL, String>> future = FXCollections.observableArrayList();
-    private final ObservableList<String> historyTitles = new ListBinding<String>() {
-        @Override
-        protected ObservableList<String> computeValue() {
-            return FXCollections.observableArrayList(history.stream().map(Pair::getValue).collect(Collectors.toList()));
-        }
-    };
-    private final ObservableList<String> futureTitles = new ListBinding<String>() {
-        @Override
-        protected ObservableList<String> computeValue() {
-            return FXCollections.observableArrayList(future.stream().map(Pair::getValue).collect(Collectors.toList()));
-        }
-    };
 
     public void commit(URL url, String title) {
         future.clear();
@@ -55,10 +44,10 @@ public class TabLog {
     }
 
     public ObservableList<String> historyTitles() {
-        return historyTitles;
+        return EasyBind.map(history, Pair::getValue);
     }
 
     public ObservableList<String> futureTitles() {
-        return futureTitles;
+        return EasyBind.map(future, Pair::getValue);
     }
 }
