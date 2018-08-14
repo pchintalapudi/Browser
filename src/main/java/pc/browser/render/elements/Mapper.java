@@ -5,8 +5,14 @@
  */
 package pc.browser.render.elements;
 
+import com.steadystate.css.dom.CSSStyleDeclarationImpl;
 import com.steadystate.css.dom.CSSStyleSheetImpl;
+import com.steadystate.css.parser.CSSOMParser;
+import com.steadystate.css.parser.SACParserCSS3;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import javafx.scene.Group;
@@ -17,7 +23,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRule;
+import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
@@ -60,34 +68,53 @@ public class Mapper {
     }
 
     private CSSStyleDeclaration style(Node domIdentity) {
+        CSSStyleDeclaration style;
         if (rules == null) {
             parseStylesheet();
         }
         Element styler = domIdentity instanceof Element ? (Element) domIdentity
                 : domIdentity instanceof TextNode ? (Element) domIdentity.parent() : null;
-        return styler == null ? null : rules.stream().filter(r
+        style = styler == null ? null : rules.stream().filter(r
                 -> r.getSelectorText().contains(" " + styler.tagName())
                 || r.getSelectorText().contains(" " + styler.tagName() + ",")
                 || r.getSelectorText().contains(" " + styler.tagName() + " "))
                 .findFirst().map(CSSStyleRule::getStyle).orElse(null);
+        style = style != null ? style : new CSSStyleDeclarationImpl();
+        return style;
     }
 
     public javafx.scene.Node map(Document document) {
-        javafx.scene.Node n = map(document.body()).getKey();
-        return n;
+        try {
+            CSSRuleList documentRules = new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
+                    new StringReader(document.getElementsByTag("style").text())), null, null).getCssRules();
+            for (int i = 0; i < documentRules.getLength(); i++) {
+                if (documentRules.item(i) instanceof CSSStyleRule) {
+                    rules.add((CSSStyleRule) documentRules.item(i));
+                }
+            }
+            javafx.scene.Node n = map(document.body()).getKey();
+            return n;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private Pair<javafx.scene.Node, CSSStyleDeclaration> map(Node node) {
         CSSStyleDeclaration styling = style(node);
-        DisplayType displayType;
+        if (node.hasAttr("style")) {
+            Arrays.stream(node.attr("style").trim().split(";")).filter(s -> !s.isEmpty()).map(s -> s.split(":"))
+                    .peek(props -> System.out.println(Arrays.toString(props)))
+                    .forEach(props -> styling.setProperty(props[0].trim(), props[1].trim(), ""));
+        }
         if (node instanceof TextNode) {
             Text t = new Text(((TextNode) node).text());
-            if (styling != null) {
+            try {
                 String color = styling.getPropertyValue("color");
-                t.setFill(color == null || color.isEmpty() ? Color.BLACK : Color.web(color));
+                t.setFill(color.isEmpty() ? Color.BLACK : Color.web(color));
+            } catch (IllegalArgumentException ex) {
             }
             return new Pair<>(t, styling);
-        } else if (node instanceof Element && (displayType = getDisplayType(styling)) != DisplayType.NONE) {
+        } else if (node instanceof Element && getDisplayType(styling) != DisplayType.NONE) {
             if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
                 return new Pair<>(InputElementMapper.map((Element) node), styling);
             } else if (node.childNodeSize() > 0) {
@@ -101,11 +128,8 @@ public class Mapper {
     }
 
     private static DisplayType getDisplayType(CSSStyleDeclaration styling) {
-        System.out.println(styling);
-        DisplayType dt = DisplayType.read(styling == null ? "block"
-                : styling.getPropertyValue("display").isEmpty() ? "block"
-                : styling.getPropertyValue("display"));
-        System.out.println(dt + "\n");
+        DisplayType dt = DisplayType.read(styling.getPropertyValue("display").isEmpty()
+                ? "block" : styling.getPropertyValue("display"));
         return dt;
     }
 }

@@ -27,10 +27,19 @@ public class SceneGraphAnalyzer {
     }
 
     private static TreeItem<String> constructTree(Node n) {
-        TreeItem<String> item = new TreeItem<>(n.toString());
+        TreeItem<String> item = new TreeItem<>(toString(n));
+        item.setExpanded(true);
         if (n instanceof Parent) {
             ((Parent) n).getChildrenUnmodifiable().stream().map(SceneGraphAnalyzer::constructTree).forEach(item.getChildren()::add);
         }
         return item;
+    }
+
+    private static String toString(Node n) {
+        if (n instanceof Parent) {
+            int childCount = ((Parent) n).getChildrenUnmodifiable().size();
+            return n.getClass() + " (" + childCount + (childCount != 1 ? " children)" : " child)");
+        }
+        return n.toString();
     }
 }
