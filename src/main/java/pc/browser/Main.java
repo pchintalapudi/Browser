@@ -26,7 +26,6 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -39,7 +38,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import pc.browser.render.DOMNodeView;
 
 /**
  *
@@ -249,8 +247,6 @@ public class Main {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
                 System.out.println(document.head().getElementsByTag("title"));
                 Platform.runLater(() -> current.setTitle(document.head().getElementsByTag("title").text()));
-                Parent html = DOMNodeView.map(document.body());
-                Platform.runLater(() -> content.setContent(html));
             } catch (IOException ex) {
                 safety(original);
             }
@@ -284,7 +280,8 @@ public class Main {
 
     private void safety(String original) {
         try {
-            URL url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(omnibar.getText(), "utf-8") + "&sourceid=browser&ie=UTF-8");
+            URL url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(original, "utf-8") + "&sourceid=browser&ie=UTF-8");
+            load(url, original);
         } catch (MalformedURLException | UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         }

@@ -10,7 +10,7 @@ package pc.browser.render.styles;
  * @author prem
  */
 public enum DisplayType {
-    BLOCK, INLINE_BLOCK, INLINE, NONE;
+    BLOCK, INLINE_BLOCK, INLINE, NONE, HIDDEN, FLEX, TABLE;
 
     public static boolean isBlock(DisplayType type) {
         return type == BLOCK;
