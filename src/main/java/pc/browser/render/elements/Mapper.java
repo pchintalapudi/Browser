@@ -6,14 +6,7 @@
 package pc.browser.render.elements;
 
 import com.steadystate.css.dom.CSSStyleSheetImpl;
-import com.steadystate.css.parser.CSSOMParser;
-import com.steadystate.css.parser.SACParserCSS3;
-import java.io.IOException;
-import java.util.Deque;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import org.jsoup.nodes.Node;
-import org.w3c.css.sac.InputSource;
+import org.jsoup.nodes.Document;
 import org.w3c.dom.css.CSSStyleSheet;
 
 /**
@@ -22,30 +15,14 @@ import org.w3c.dom.css.CSSStyleSheet;
  */
 public class Mapper {
 
-    private final ObjectProperty<CSSStyleSheet> stylingProperty = new SimpleObjectProperty<>();
+    private final CSSStyleSheet stylesheet;
 
-    public Mapper(InputSource stylesheetSource) {
-        try {
-            stylingProperty.set(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(stylesheetSource, null, null));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+    public Mapper(CSSStyleSheet stylesheet) {
+        this.stylesheet = stylesheet;
     }
 
-    public void addStyleSheet(InputSource stylesheetSource) {
-        CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
-        parser.setParentStyleSheet((CSSStyleSheetImpl) stylingProperty.get());
-        try {
-            stylingProperty.set(parser.parseStyleSheet(stylesheetSource, null, null));
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public void map(Node domNode) {
-    }
-
-    private void applyStyles(Deque<Node> cssSelectorPath) {
-
+    public Mapper appendStyleSheet(CSSStyleSheetImpl stylesheet) {
+        stylesheet.setParentStyleSheet(this.stylesheet);
+        return new Mapper(stylesheet);
     }
 }
