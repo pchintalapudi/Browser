@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.util.Pair;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -70,14 +70,18 @@ public class Mapper {
         if (rules == null) {
             parseStylesheet();
         }
-        Element styler = domIdentity instanceof Element ? (Element) domIdentity : (Element) domIdentity.parent();
-        return rules.stream().filter(r
-                -> r.getSelectorText().equals(styler.tagName()))
+        Element styler = domIdentity instanceof Element ? (Element) domIdentity
+                : domIdentity instanceof TextNode ? (Element) domIdentity.parent() : null;
+        return styler == null ? null : rules.stream().filter(r
+                -> r.getSelectorText().contains(" " + styler.tagName())
+                || r.getSelectorText().contains(" " + styler.tagName() + ",")
+                || r.getSelectorText().contains(" " + styler.tagName() + " "))
                 .findFirst().map(CSSStyleRule::getStyle).orElse(null);
     }
 
     public javafx.scene.Node map(Document document) {
-        return map(document.body()).getKey();
+        javafx.scene.Node n = map(document.body()).getKey();
+        return n;
     }
 
     private Pair<javafx.scene.Node, CSSStyleDeclaration> map(Node node) {
@@ -87,19 +91,25 @@ public class Mapper {
             return new Pair<>(new Text(((TextNode) node).text()), styling);
         } else if (node instanceof Element && (displayType = getDisplayType(styling)) != DisplayType.NONE) {
             if (((Element) node).tagName().equals("input")) {
+                styling.setProperty("display", "inline-block", "");
                 return new Pair<>(new TextField(), styling);
             } else if (node.childNodeSize() > 0) {
                 switch (displayType) {
                     default:
                         VBox content = new VBox();
                         List<Pair<javafx.scene.Node, CSSStyleDeclaration>> mapped = node.childNodes().stream().map(this::map).collect(Collectors.toList());
-                        TextFlow current = new TextFlow(mapped.get(0).getKey());
+                        HBox current = new HBox(mapped.get(0).getKey());
                         for (int i = 1; i < mapped.size(); i++) {
-                            if (DisplayType.isInline(getDisplayType(mapped.get(i).getValue()))) {
-                                current.getChildren().add(mapped.get(i).getKey());
-                            } else {
-                                content.getChildren().add(current);
-                                current = new TextFlow(mapped.get(i).getKey());
+                            if (getDisplayType(styling) != DisplayType.NONE) {
+                                if (DisplayType.isInline(getDisplayType(mapped.get(i).getValue()))) {
+                                    current.getChildren().add(mapped.get(i).getKey());
+                                } else {
+                                    if (current.getChildren().size() > 1) {
+                                        System.out.println(current.getChildren());
+                                    }
+                                    content.getChildren().add(current);
+                                    current = new HBox(mapped.get(i).getKey());
+                                }
                             }
                         }
                         content.getChildren().add(current);
