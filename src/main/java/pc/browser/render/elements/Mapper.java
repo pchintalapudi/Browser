@@ -7,15 +7,9 @@ package pc.browser.render.elements;
 
 import com.steadystate.css.dom.CSSStyleSheetImpl;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Pair;
@@ -36,7 +30,6 @@ public class Mapper {
 
     private final CSSStyleSheet stylesheet;
     private List<CSSStyleRule> rules;
-    private ElementWrapper wrapper = new ElementWrapper(new Insets(0), new Insets(0), new Insets(0));
 
     public Mapper(CSSStyleSheet stylesheet) {
         this.stylesheet = stylesheet;
@@ -88,35 +81,19 @@ public class Mapper {
         CSSStyleDeclaration styling = style(node);
         DisplayType displayType;
         if (node instanceof TextNode) {
-            return new Pair<>(new Text(((TextNode) node).text()), styling);
+            Text t = new Text(((TextNode) node).text());
+            if (styling != null) {
+                String color = styling.getPropertyValue("color");
+                t.setFill(color == null || color.isEmpty() ? Color.BLACK : Color.web(color));
+            }
+            return new Pair<>(t, styling);
         } else if (node instanceof Element && (displayType = getDisplayType(styling)) != DisplayType.NONE) {
-            if (((Element) node).tagName().equals("input")) {
-                styling.setProperty("display", "inline-block", "");
-                return new Pair<>(new TextField(), styling);
+            if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
+                return new Pair<>(InputElementMapper.map((Element) node), styling);
             } else if (node.childNodeSize() > 0) {
-                switch (displayType) {
-                    default:
-                        VBox content = new VBox();
-                        List<Pair<javafx.scene.Node, CSSStyleDeclaration>> mapped = node.childNodes().stream().map(this::map).collect(Collectors.toList());
-                        HBox current = new HBox(mapped.get(0).getKey());
-                        for (int i = 1; i < mapped.size(); i++) {
-                            if (getDisplayType(styling) != DisplayType.NONE) {
-                                if (DisplayType.isInline(getDisplayType(mapped.get(i).getValue()))) {
-                                    current.getChildren().add(mapped.get(i).getKey());
-                                } else {
-                                    if (current.getChildren().size() > 1) {
-                                        System.out.println(current.getChildren());
-                                    }
-                                    content.getChildren().add(current);
-                                    current = new HBox(mapped.get(i).getKey());
-                                }
-                            }
-                        }
-                        content.getChildren().add(current);
-                        return new Pair<>(wrapper.wrap(content, Collections.emptyList(), Color.TRANSPARENT), styling);
-                }
+                return new Pair<>(DisplayMapper.map(node, styling, this::map), styling);
             } else {
-                return new Pair<>(wrapper.wrap(new Group(), Collections.emptyList(), Color.TRANSPARENT), styling);
+                return new Pair<>(new Group(), styling);
             }
         } else {
             return new Pair<>(new Group(), styling);
@@ -124,13 +101,11 @@ public class Mapper {
     }
 
     private static DisplayType getDisplayType(CSSStyleDeclaration styling) {
-        try {
-            DisplayType dt = DisplayType.read(styling == null ? "block"
-                    : styling.getPropertyValue("display") == null ? "block"
-                    : styling.getPropertyValue("display"));
-            return dt;
-        } catch (IllegalArgumentException ex) {
-            return DisplayType.BLOCK;
-        }
+        System.out.println(styling);
+        DisplayType dt = DisplayType.read(styling == null ? "block"
+                : styling.getPropertyValue("display").isEmpty() ? "block"
+                : styling.getPropertyValue("display"));
+        System.out.println(dt + "\n");
+        return dt;
     }
 }

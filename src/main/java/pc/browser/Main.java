@@ -31,7 +31,6 @@ import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -39,11 +38,13 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.w3c.css.sac.InputSource;
+import pc.browser.debug.SceneGraphAnalyzer;
 import pc.browser.render.elements.Mapper;
 import pc.browser.resources.Resources;
 
@@ -60,7 +61,7 @@ public class Main {
     @FXML
     private TextField omnibar;
     @FXML
-    private ScrollPane content;
+    private StackPane content;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -241,6 +242,7 @@ public class Main {
 
     @FXML
     private void reload() {
+        content.getChildren().get(0).setOpacity(0.5);
         load(focusedTab.get().getCurrent(), null);
     }
 
@@ -261,8 +263,9 @@ public class Main {
                                     new InputStreamReader(Resources.getCSS("blink-user-agent.css")
                                             .openStream()))), null, null)).map(document);
                     Platform.runLater(() -> {
+                        SceneGraphAnalyzer.show(p);
                         current.sceneGraphProperty().set(p);
-                        content.setContent(p);
+                        content.getChildren().setAll(p);
                     });
                 } catch (Exception ex) {
                     ex.printStackTrace();

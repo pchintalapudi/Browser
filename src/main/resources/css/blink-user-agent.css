@@ -325,7 +325,7 @@ input, textarea, keygen, select, button, meter, progress {
 input[type="hidden" i] {
     display: none
 }
-input {
+*/input {
     -webkit-appearance: textfield;
     padding: 1px;
     background-color: white;
@@ -333,7 +333,7 @@ input {
     -webkit-rtl-ordering: logical;
     -webkit-user-select: text;
     cursor: auto;
-}
+}/*
 input[type="search" i] {
     -webkit-appearance: searchfield;
     box-sizing: border-box;
@@ -404,9 +404,9 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-inner-spin-button {
     opacity: 1;
     pointer-events: auto;
 }
-keygen, select {
+*/keygen, select {
     border-radius: 5px;
-}
+}/*
 keygen::-webkit-keygen-select {
     margin: 0px;
 }
@@ -525,7 +525,7 @@ option:-internal-spatial-navigation-focus {
     outline: black dashed 1px;
     outline-offset: -1px;
 }
-datalist {
+*/datalist {
     display: none
 }
 area {
@@ -534,7 +534,7 @@ area {
 }
 param {
     display: none
-}
+}/*
 input[type="checkbox" i] {
     -webkit-appearance: checkbox;
     box-sizing: border-box;
@@ -819,13 +819,13 @@ input[type="file" i]:focus::-webkit-file-upload-button {
     outline-offset: 0
 }*/
 
-a:-webkit-any-link {
-    color: -webkit-link;
+a {
+    color: #0000ff;
     text-decoration: underline;
     cursor: auto;
 }
 a:-webkit-any-link:active {
-    color: -webkit-activelink
+    color: red;
 }
 /* HTML5 ruby elements */
 ruby, rt {

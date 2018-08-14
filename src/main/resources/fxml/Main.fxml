@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
@@ -12,13 +12,13 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" fx:id="root" onMouseClicked="#requestFocus" prefHeight="900.0" prefWidth="1600.0" styleClass="root" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
+<AnchorPane id="AnchorPane" fx:id="root" onMouseClicked="#requestFocus" prefHeight="900.0" prefWidth="1600.0" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
     <children>
-        <VBox alignment="TOP_CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <VBox alignment="TOP_CENTER" styleClass="background" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <HBox alignment="CENTER_RIGHT">
+                <HBox alignment="CENTER_RIGHT" styleClass="background">
                     <children>
-                        <HBox alignment="CENTER_LEFT" spacing="10.0" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="background" HBox.hgrow="ALWAYS">
                             <children>
                                 <HBox fx:id="tabBar" alignment="CENTER_LEFT" prefHeight="40.0">
                                     <padding>
@@ -36,7 +36,7 @@
                                 </HBox>
                             </children>
                         </HBox>
-                        <HBox HBox.hgrow="NEVER">
+                        <HBox styleClass="background" HBox.hgrow="NEVER">
                             <children>
                                 <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#minimize" prefWidth="60.0" styleClass="window-button">
                                     <children>
@@ -90,8 +90,16 @@
                         </HBox>
                     </children>
                 </VBox>
-                <ScrollPane VBox.vgrow="ALWAYS" fx:id="content"/>
+                <ScrollPane styleClass="background" VBox.vgrow="ALWAYS">
+                    <content>
+                        <StackPane styleClass="background" alignment="TOP_LEFT" fx:id="content"/>
+                    </content>
+                </ScrollPane>
             </children>
         </VBox>
     </children>
+    <styleClass>
+        <String fx:value="root" />
+        <String fx:value="background" />
+    </styleClass>
 </AnchorPane>
