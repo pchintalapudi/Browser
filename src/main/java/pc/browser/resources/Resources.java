@@ -6,6 +6,7 @@
 package pc.browser.resources;
 
 import java.io.IOException;
+import java.net.URL;
 import javafx.fxml.FXMLLoader;
 
 /**
@@ -25,8 +26,12 @@ public class Resources {
             throw new RuntimeException(ex);
         }
     }
-    
+
     public static <T> T directLoad(String localName) {
         return load(getFXMLLoader(localName));
+    }
+
+    public static URL getCSS(String localName) {
+        return Resources.class.getResource("/css/" + localName);
     }
 }

@@ -5,7 +5,11 @@
  */
 package pc.browser;
 
+import com.steadystate.css.parser.CSSOMParser;
+import com.steadystate.css.parser.SACParserCSS3;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,7 +43,9 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.w3c.css.sac.InputSource;
 import pc.browser.render.elements.Mapper;
+import pc.browser.resources.Resources;
 
 /**
  *
@@ -249,11 +255,18 @@ public class Main {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
                 System.out.println(document.head().getElementsByTag("title"));
                 Platform.runLater(() -> current.setTitle(document.head().getElementsByTag("title").text()));
-                Parent p = (Parent) new Mapper(null).map(document);
-                Platform.runLater(() -> {
-                    current.sceneGraphProperty().set(p);
-                    content.setContent(p);
-                });
+                try {
+                    Parent p = (Parent) new Mapper(new CSSOMParser(new SACParserCSS3())
+                            .parseStyleSheet(new InputSource(new BufferedReader(
+                                    new InputStreamReader(Resources.getCSS("blink-user-agent.css")
+                                            .openStream()))), null, null)).map(document);
+                    Platform.runLater(() -> {
+                        current.sceneGraphProperty().set(p);
+                        content.setContent(p);
+                    });
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             } catch (IOException ex) {
                 safety(original);
             }

@@ -7,18 +7,24 @@ package pc.browser.render.elements;
 
 import com.steadystate.css.dom.CSSStyleSheetImpl;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javafx.geometry.Insets;
+import javafx.scene.Group;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.util.Pair;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.w3c.dom.css.CSSRule;
+import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
 
@@ -29,6 +35,7 @@ import org.w3c.dom.css.CSSStyleSheet;
 public class Mapper {
 
     private final CSSStyleSheet stylesheet;
+    private List<CSSStyleRule> rules;
     private ElementWrapper wrapper = new ElementWrapper(new Insets(0), new Insets(0), new Insets(0));
 
     public Mapper(CSSStyleSheet stylesheet) {
@@ -41,7 +48,7 @@ public class Mapper {
     }
 
     private void parseStylesheet() {
-        List<CSSStyleRule> rules = new ArrayList<>();
+        rules = new ArrayList<>();
         for (int i = 0; i < stylesheet.getCssRules().getLength(); i++) {
             CSSRule rule = stylesheet.getCssRules().item(i);
             if (rule instanceof CSSStyleRule) {
@@ -51,25 +58,69 @@ public class Mapper {
         rules.sort(Mapper::prioritizer);
     }
 
+    private static final Pattern multispaceCompressor = Pattern.compile(" +");
+
     private static int prioritizer(CSSStyleRule r1, CSSStyleRule r2) {
+        String selector1 = multispaceCompressor.matcher(r1.getSelectorText()).replaceAll(" ");
+        String selector2 = multispaceCompressor.matcher(r2.getSelectorText()).replaceAll(" ");
         return 0;
     }
-    
-    public javafx.scene.Node map(Document document) {
-        return map(document.body());
+
+    private CSSStyleDeclaration style(Node domIdentity) {
+        if (rules == null) {
+            parseStylesheet();
+        }
+        Element styler = domIdentity instanceof Element ? (Element) domIdentity : (Element) domIdentity.parent();
+        return rules.stream().filter(r
+                -> r.getSelectorText().equals(styler.tagName()))
+                .findFirst().map(CSSStyleRule::getStyle).orElse(null);
     }
 
-    private javafx.scene.Node map(Node node) {
+    public javafx.scene.Node map(Document document) {
+        return map(document.body()).getKey();
+    }
+
+    private Pair<javafx.scene.Node, CSSStyleDeclaration> map(Node node) {
+        CSSStyleDeclaration styling = style(node);
+        DisplayType displayType;
         if (node instanceof TextNode) {
-            return new Text(((TextNode) node).text());
-        } else {
-            VBox content = new VBox();
-            if (node instanceof Element && ((Element) node).tagName().equals("a")) {
-                content.setStyle("-fx-text-color: #0000ff;\n" + "-fx-cursor: hand;");
-                System.out.println(content.getStyle());
+            return new Pair<>(new Text(((TextNode) node).text()), styling);
+        } else if (node instanceof Element && (displayType = getDisplayType(styling)) != DisplayType.NONE) {
+            if (((Element) node).tagName().equals("input")) {
+                return new Pair<>(new TextField(), styling);
+            } else if (node.childNodeSize() > 0) {
+                switch (displayType) {
+                    default:
+                        VBox content = new VBox();
+                        List<Pair<javafx.scene.Node, CSSStyleDeclaration>> mapped = node.childNodes().stream().map(this::map).collect(Collectors.toList());
+                        TextFlow current = new TextFlow(mapped.get(0).getKey());
+                        for (int i = 1; i < mapped.size(); i++) {
+                            if (DisplayType.isInline(getDisplayType(mapped.get(i).getValue()))) {
+                                current.getChildren().add(mapped.get(i).getKey());
+                            } else {
+                                content.getChildren().add(current);
+                                current = new TextFlow(mapped.get(i).getKey());
+                            }
+                        }
+                        content.getChildren().add(current);
+                        return new Pair<>(wrapper.wrap(content, Collections.emptyList(), Color.TRANSPARENT), styling);
+                }
+            } else {
+                return new Pair<>(wrapper.wrap(new Group(), Collections.emptyList(), Color.TRANSPARENT), styling);
             }
-            node.childNodes().stream().map(this::map).forEach(content.getChildren()::add);
-            return wrapper.wrap(content, Collections.emptyList(), Color.TRANSPARENT);
+        } else {
+            return new Pair<>(new Group(), styling);
+        }
+    }
+
+    private static DisplayType getDisplayType(CSSStyleDeclaration styling) {
+        try {
+            DisplayType dt = DisplayType.read(styling == null ? "block"
+                    : styling.getPropertyValue("display") == null ? "block"
+                    : styling.getPropertyValue("display"));
+            return dt;
+        } catch (IllegalArgumentException ex) {
+            return DisplayType.BLOCK;
         }
     }
 }

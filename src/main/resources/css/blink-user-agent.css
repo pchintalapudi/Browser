@@ -273,7 +273,7 @@ ol ul, ul ol, ul ul, ol ol {
     -webkit-margin-before: 0;
     -webkit-margin-after: 0
 }
-/* form elements */
+/* form elements 
 form {
     display: block;
     margin-top: 0__qem;
@@ -301,14 +301,14 @@ fieldset {
 button {
     -webkit-appearance: button;
 }
-/* Form controls don't go vertical. */
+ Form controls don't go vertical. 
 input, textarea, keygen, select, button, meter, progress {
     -webkit-writing-mode: horizontal-tb !important;
 }
 input, textarea, keygen, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
-    text-rendering: auto; /* FIXME: Remove when tabs work with optimizeLegibility. */
+    text-rendering: auto;  FIXME: Remove when tabs work with optimizeLegibility. 
     color: initial;
     letter-spacing: normal;
     word-spacing: normal;
@@ -545,7 +545,7 @@ input[type="color" i] {
     width: 44px;
     height: 23px;
     background-color: ButtonFace;
-    /* Same as native_theme_base. */
+     Same as native_theme_base. 
     border: 1px #a9a9a9 solid;
     padding: 1px 2px;
 }
@@ -674,7 +674,7 @@ select:-internal-list-box hr {
 output {
     display: inline;
 }
-/* meter */
+ meter 
 meter {
     -webkit-appearance: meter;
     box-sizing: border-box;
@@ -715,7 +715,7 @@ meter::-webkit-meter-even-less-good-value {
     -webkit-user-modify: read-only !important;
     box-sizing: border-box;
 }
-/* progress */
+ progress 
 progress {
     -webkit-appearance: progress-bar;
     box-sizing: border-box;
@@ -741,10 +741,10 @@ progress::-webkit-progress-bar {
 progress::-webkit-progress-value {
     background-color: green;
     height: 100%;
-    width: 50%; /* should be removed later */
+    width: 50%;  should be removed later 
     -webkit-user-modify: read-only !important;
     box-sizing: border-box;
-}
+}*/
 /* inline elements */
 u, ins {
     text-decoration: underline
@@ -799,7 +799,7 @@ html:focus, body:focus, input[readonly]:focus {
 embed:focus, iframe:focus, object:focus {
     outline: none
 }
-
+/*
 input:focus, textarea:focus, keygen:focus, select:focus {
     outline-offset: -2px
 }
@@ -814,7 +814,7 @@ input[type="search" i]:focus,
 input[type="submit" i]:focus,
 input[type="file" i]:focus::-webkit-file-upload-button {
     outline-offset: 0
-}
+}*/
 
 a:-webkit-any-link {
     color: -webkit-link;
@@ -874,9 +874,9 @@ bdi, output {
 bdo {
     unicode-bidi: bidi-override;
 }
-textarea[dir=auto i] {
+/*textarea[dir=auto i] {
     unicode-bidi: -webkit-plaintext;
-}
+}*/
 dialog:not([open]) {
     display: none
 }
