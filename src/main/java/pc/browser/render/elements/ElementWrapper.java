@@ -36,6 +36,9 @@ public class ElementWrapper {
     public StackPane wrap(Node n, List<Pair<BorderStyle, Color>> borderStyling, Color backgroundColor) {
         Border b;
         switch (borderStyling.size()) {
+            case 0:
+                b = null;
+                break;
             case 1:
                 b = new Border(new BorderStroke(borderStyling.get(0).getValue(), BorderStyle.mapToBorderStrokeStyle(borderStyling.get(0).getKey()), null, borderWidths));
                 break;
@@ -64,7 +67,9 @@ public class ElementWrapper {
         }
         StackPane container = new StackPane(n);
         container.setBackground(new Background(new BackgroundFill(backgroundColor, null, null)));
-        container.setBorder(b);
+        if (b != null) {
+            container.setBorder(b);
+        }
         container.setPadding(padding);
         StackPane marginContainer = new StackPane(container);
         marginContainer.setPadding(margins);

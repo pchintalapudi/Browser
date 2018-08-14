@@ -26,6 +26,7 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -38,6 +39,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import pc.browser.render.elements.Mapper;
 
 /**
  *
@@ -247,6 +249,11 @@ public class Main {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
                 System.out.println(document.head().getElementsByTag("title"));
                 Platform.runLater(() -> current.setTitle(document.head().getElementsByTag("title").text()));
+                Parent p = (Parent) new Mapper(null).map(document);
+                Platform.runLater(() -> {
+                    current.sceneGraphProperty().set(p);
+                    content.setContent(p);
+                });
             } catch (IOException ex) {
                 safety(original);
             }
@@ -258,7 +265,7 @@ public class Main {
         URL url;
         String text = omnibar.getText();
         try {
-            String text0 = text;
+            String text0 = text.replace("https://", "http://");
             if (!text0.contains("www.")) {
                 text0 = "www." + text0;
             }
