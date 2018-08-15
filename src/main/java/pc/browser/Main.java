@@ -283,6 +283,9 @@ public class Main {
     private void load() {
         URL url;
         String text = omnibar.getText();
+        if (text.isEmpty()) {
+            return;
+        }
         try {
             String text0 = text.replace("https://", "http://");
             if (!text0.contains("www.")) {
