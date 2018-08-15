@@ -88,11 +88,14 @@ public class Main {
         newTab();
         KeyCodeCombination newTab = new KeyCodeCombination(KeyCode.T, KeyCombination.SHORTCUT_DOWN);
         KeyCodeCombination closeTab = new KeyCodeCombination(KeyCode.W, KeyCombination.SHORTCUT_DOWN);
+        KeyCodeCombination newWindow = new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN);
         EventHandler<KeyEvent> keyListener = k -> {
             if (newTab.match(k)) {
                 newTab();
             } else if (closeTab.match(k)) {
                 closeTab(focusedTab.get());
+            } else if (newWindow.match(k)) {
+                newWindow();
             }
         };
         root.sceneProperty().addListener((o, b, s) -> {
@@ -252,7 +255,7 @@ public class Main {
         current.getLoadingProperty().set(true);
         current.setEnteredText(null);
         current.setCurrent(url);
-        Platform.runLater(() -> omnibar.setText(url.toExternalForm()));
+        omnibar.setText(url.toExternalForm());
         async.submit(() -> {
             try {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
@@ -296,6 +299,7 @@ public class Main {
             }
             url = new URL(text0);
         } catch (MalformedURLException ex) {
+            ex.printStackTrace();
             try {
                 url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(omnibar.getText(), "utf-8") + "&sourceid=browser&ie=UTF-8");
             } catch (MalformedURLException | UnsupportedEncodingException ex1) {
@@ -347,12 +351,18 @@ public class Main {
         root.requestFocus();
     }
 
-//    private void newWindow() {
-//        ProcessBuilder pb = new ProcessBuilder();
-//        try {
-//            pb.inheritIO().command("java Browser").start();
-//        } catch (IOException ex) {
-//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
+    @FXML
+    private void newWindow() {
+        ProcessBuilder pb = new ProcessBuilder();
+        try {
+            String path = Browser.class.getResource("Browser.class")
+                    .toString().replace("file:", "").replace("/Browser.class", "")
+                    .replace("/pc/browser", "");
+            System.out.println(path);
+            pb.inheritIO().command("java", "-cp", path,
+                    "pc.browser.Browser").start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

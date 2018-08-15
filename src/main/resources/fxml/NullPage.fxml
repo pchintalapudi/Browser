@@ -21,17 +21,17 @@
                             <children>
                                 <Box cache="true" cacheHint="ROTATE" depth="100.0" height="100.0" width="100.0">
                                     <transforms>
-                                        <Rotate fx:id="yRotate" angle="60.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
+                                        <Rotate fx:id="yRotate" angle="0.0" pivotX="0.0" pivotY="0.0" pivotZ="0.0">
                                             <axis>
                                                 <Point3D x="0.0" y="1.0" z="0.0" />
                                             </axis>
                                         </Rotate>
-                                        <Rotate angle="60.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
+                                        <Rotate angle="35.26" pivotX="0.0" pivotY="0.0" pivotZ="0.0">
                                             <axis>
                                                 <Point3D x="0.0" y="0.0" z="1.0" />
                                             </axis>
                                         </Rotate>
-                                        <Rotate angle="60.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
+                                        <Rotate angle="45.0" pivotX="0.0" pivotY="0.0" pivotZ="0.0">
                                             <axis>
                                                 <Point3D x="1.0" y="0.0" z="0.0" />
                                             </axis>
