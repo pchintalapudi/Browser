@@ -97,8 +97,7 @@ public class DisplayMapper {
 
     private static DisplayType getDisplayType(CSSStyleDeclaration styling) {
         try {
-            DisplayType dt = DisplayType.read(styling == null ? "block"
-                    : styling.getPropertyValue("display") == null ? "block"
+            DisplayType dt = DisplayType.read(styling.getPropertyValue("display") == null ? "inline-block"
                     : styling.getPropertyValue("display"));
             return dt;
         } catch (IllegalArgumentException ex) {

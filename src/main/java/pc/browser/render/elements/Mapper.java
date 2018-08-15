@@ -135,7 +135,7 @@ public class Mapper {
 
     private static DisplayType getDisplayType(CSSStyleDeclaration styling) {
         DisplayType dt = DisplayType.read(styling.getPropertyValue("display").isEmpty()
-                ? "block" : styling.getPropertyValue("display"));
+                ? "inline-block" : styling.getPropertyValue("display"));
         return dt;
     }
 }
