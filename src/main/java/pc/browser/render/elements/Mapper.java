@@ -75,7 +75,8 @@ public class Mapper {
         Element styler = domIdentity instanceof Element ? (Element) domIdentity
                 : domIdentity instanceof TextNode ? (Element) domIdentity.parent() : null;
         style = styler == null ? null : rules.stream().filter(r
-                -> r.getSelectorText().contains(" " + styler.tagName())
+                -> r.getSelectorText().equals(styler.tagName())
+                || r.getSelectorText().contains(" " + styler.tagName())
                 || r.getSelectorText().contains(" " + styler.tagName() + ",")
                 || r.getSelectorText().contains(" " + styler.tagName() + " "))
                 .findFirst().map(CSSStyleRule::getStyle).orElse(null);
@@ -108,6 +109,7 @@ public class Mapper {
         }
         if (node instanceof TextNode) {
             Text t = new Text(((TextNode) node).text());
+            t.setUserData(node);
             try {
                 String color = styling.getPropertyValue("color");
                 t.setFill(color.isEmpty() ? Color.BLACK : Color.web(color));
@@ -120,10 +122,14 @@ public class Mapper {
             } else if (node.childNodeSize() > 0) {
                 return new Pair<>(DisplayMapper.map(node, styling, this::map), styling);
             } else {
-                return new Pair<>(new Group(), styling);
+                Group g = new Group();
+                g.setUserData(node);
+                return new Pair<>(g, styling);
             }
         } else {
-            return new Pair<>(new Group(), styling);
+            Group g = new Group();
+            g.setUserData(node);
+            return new Pair<>(g, styling);
         }
     }
 

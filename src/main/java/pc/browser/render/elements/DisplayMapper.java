@@ -31,6 +31,7 @@ public class DisplayMapper {
                 HBox hContainer = new HBox();
                 n.childNodes().stream().map(childMapper).filter(p -> getDisplayType(p.getValue()) != DisplayType.NONE)
                         .map(Pair::getKey).forEach(hContainer.getChildren()::add);
+                hContainer.setUserData(n);
                 return hContainer;
             case STANDARD:
             default:
@@ -49,11 +50,13 @@ public class DisplayMapper {
                     }
                     vContainer.getChildren().add(prev);
                 }
+                vContainer.setUserData(n);
                 return vContainer;
             case FLEX_VER:
                 vContainer = new VBox();
                 n.childNodes().stream().map(childMapper).filter(p -> getDisplayType(p.getValue()) != DisplayType.NONE)
                         .map(Pair::getKey).forEach(vContainer.getChildren()::add);
+                vContainer.setUserData(n);
                 return vContainer;
             case TABLE:
                 GridPane table = new GridPane();
@@ -70,6 +73,7 @@ public class DisplayMapper {
                         }
                     }
                 }
+                table.setUserData(n);
                 return table;
         }
     }

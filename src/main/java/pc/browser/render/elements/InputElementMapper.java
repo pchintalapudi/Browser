@@ -24,25 +24,34 @@ import org.jsoup.nodes.Element;
 public class InputElementMapper {
 
     public static javafx.scene.Node map(Element element) {
+        javafx.scene.Node node;
         switch (element.tagName()) {
             default:
-                return new Group();
+                node = new Group();
+                break;
             case "select":
                 List<String> options = retrieveOptions(element);
                 ChoiceBox<String> choices = new ChoiceBox<>(FXCollections.observableArrayList(options));
                 choices.getSelectionModel().selectFirst();
-                return choices;
+                node = choices;
+                break;
             case "datalist":
                 options = retrieveOptions(element);
                 ComboBox<String> combo = new ComboBox<>(FXCollections.observableArrayList(options));
-                return combo;
+                node = combo;
+                break;
             case "button":
-                return new Button(element.text());
+                node = new Button(element.text());
+                break;
             case "input":
-                return new TextField();
+                node = new TextField();
+                break;
             case "textarea":
-                return new TextArea();
+                node = new TextArea();
+                break;
         }
+        node.setUserData(element);
+        return node;
     }
 
     public static boolean isInputMapped(String tagName) {
