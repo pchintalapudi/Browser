@@ -6,36 +6,54 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.PhongMaterial?>
 <?import javafx.scene.shape.Box?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.transform.Rotate?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<StackPane fx:id="root" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.resources.NullPageController">
     <children>
-      <VBox alignment="TOP_CENTER" spacing="10.0">
-         <children>
-            <Group>
-               <children>
-                    <Box depth="100.0" height="100.0" layoutX="75.0" layoutY="7.322330474853516" width="100.0">
-                        <transforms>
-                            <Rotate angle="45.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
-                                <axis>
-                                    <Point3D x="0.0" y="1.0" z="1.0" />
-                                </axis>
-                            </Rotate>
-                        </transforms>
-                    </Box>
-               </children>
-            </Group>
-            <Label text="You haven't loaded anything yet!">
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-         </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
-      </VBox>
+        <VBox alignment="CENTER" spacing="30.0">
+            <children>
+                <Group>
+                    <children>
+                        <Group>
+                            <children>
+                                <Box cache="true" cacheHint="ROTATE" depth="100.0" height="100.0" width="100.0">
+                                    <transforms>
+                                        <Rotate fx:id="yRotate" angle="60.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
+                                            <axis>
+                                                <Point3D x="0.0" y="1.0" z="0.0" />
+                                            </axis>
+                                        </Rotate>
+                                        <Rotate angle="60.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
+                                            <axis>
+                                                <Point3D x="0.0" y="0.0" z="1.0" />
+                                            </axis>
+                                        </Rotate>
+                                        <Rotate angle="60.0" pivotX="50.0" pivotY="50.0" pivotZ="50.0">
+                                            <axis>
+                                                <Point3D x="1.0" y="0.0" z="0.0" />
+                                            </axis>
+                                        </Rotate>
+                                    </transforms>
+                                    <material>
+                                        <PhongMaterial diffuseColor="#0088ff88" specularColor="#0088ff22" />
+                                    </material>
+                                </Box>
+                            </children>
+                        </Group>
+                    </children>
+                </Group>
+                <Label text="You haven't loaded anything yet!">
+                    <font>
+                        <Font size="32.0" />
+                    </font>
+                </Label>
+            </children>
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+            </padding>
+        </VBox>
     </children>
 </StackPane>

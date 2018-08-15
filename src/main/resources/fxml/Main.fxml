@@ -90,11 +90,7 @@
                         </HBox>
                     </children>
                 </VBox>
-                <ScrollPane styleClass="background" VBox.vgrow="ALWAYS">
-                    <content>
-                        <StackPane styleClass="background" alignment="TOP_LEFT" fx:id="content"/>
-                    </content>
-                </ScrollPane>
+                <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="background" VBox.vgrow="ALWAYS" fx:id="content" />
             </children>
         </VBox>
     </children>

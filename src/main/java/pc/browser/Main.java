@@ -31,6 +31,7 @@ import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
@@ -38,7 +39,6 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
@@ -61,7 +61,7 @@ public class Main {
     @FXML
     private TextField omnibar;
     @FXML
-    private StackPane content;
+    private ScrollPane content;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -242,7 +242,7 @@ public class Main {
 
     @FXML
     private void reload() {
-        content.getChildren().get(0).setOpacity(0.5);
+        content.getContent().setOpacity(0.5);
         requestFocus();
         load(focusedTab.get().getCurrent(), null);
     }
@@ -266,7 +266,9 @@ public class Main {
                     Platform.runLater(() -> {
                         SceneGraphAnalyzer.show(p);
                         current.sceneGraphProperty().set(p);
-                        content.getChildren().setAll(p);
+                        if (current == focusedTab.get()) {
+                            content.setContent(p);
+                        }
                     });
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -334,6 +336,7 @@ public class Main {
     }
 
     private void switchToTab(TabController tab) {
+        content.setContent(tab.sceneGraphProperty().get());
     }
 
     @FXML
