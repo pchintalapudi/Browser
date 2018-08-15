@@ -44,14 +44,28 @@ public class DisplayMapper {
                         if (n.childNode(i) instanceof TextNode || DisplayType.isInline(getDisplayType(mappedList.get(i).getValue()))) {
                             prev.getChildren().add(mappedList.get(i).getKey());
                         } else if (getDisplayType(mappedList.get(i).getValue()) != DisplayType.NONE) {
-                            vContainer.getChildren().add(prev);
+                            if (prev.getChildren().size() > 1) {
+                                vContainer.getChildren().add(prev);
+                            } else {
+                                vContainer.getChildren().add(prev.getChildren().remove(0));
+                            }
                             prev = new HBox(mappedList.get(i).getKey());
                         }
                     }
-                    vContainer.getChildren().add(prev);
+                    if (prev.getChildren().size() > 1) {
+                        vContainer.getChildren().add(prev);
+                    } else {
+                        vContainer.getChildren().add(prev.getChildren().remove(0));
+                    }
                 }
-                vContainer.setUserData(n);
-                return vContainer;
+                if (vContainer.getChildren().size() > 1) {
+                    vContainer.setUserData(n);
+                    return vContainer;
+                } else {
+                    javafx.scene.Node node = vContainer.getChildren().remove(0);
+                    node.setUserData(n);
+                    return node;
+                }
             case FLEX_VER:
                 vContainer = new VBox();
                 n.childNodes().stream().map(childMapper).filter(p -> getDisplayType(p.getValue()) != DisplayType.NONE)

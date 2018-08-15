@@ -243,6 +243,7 @@ public class Main {
     @FXML
     private void reload() {
         content.getChildren().get(0).setOpacity(0.5);
+        requestFocus();
         load(focusedTab.get().getCurrent(), null);
     }
 
@@ -298,6 +299,7 @@ public class Main {
         }
         TabController current = focusedTab.get();
         current.getLog().commit(current.getCurrent(), current.getTitle());
+        requestFocus();
         load(url, text);
     }
 

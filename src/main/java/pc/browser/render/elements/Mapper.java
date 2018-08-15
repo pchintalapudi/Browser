@@ -86,6 +86,25 @@ public class Mapper {
 
     public javafx.scene.Node map(Document document) {
         try {
+            document.getElementsByTag("link").stream().filter(Mapper::isStyleSheetLink)
+                    .map(e -> e.absUrl("href")).map(InputSource::new).map(is -> {
+                try {
+                    return new CSSOMParser(new SACParserCSS3()).parseStyleSheet(is, null, null).getCssRules();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
+            }).forEach(rl -> {
+                try {
+                    for (int i = 0; i < rl.getLength(); i++) {
+                        if (rl.item(i) instanceof CSSStyleRule) {
+                            rules.add((CSSStyleRule) rl.item(i));
+                        }
+                    }
+                } catch (NullPointerException expected) {
+                    //If the css file is poorly written, errors will show up here.
+                }
+            });
             CSSRuleList documentRules = new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
                     new StringReader(document.getElementsByTag("style").text())), null, null).getCssRules();
             for (int i = 0; i < documentRules.getLength(); i++) {
@@ -104,7 +123,6 @@ public class Mapper {
         CSSStyleDeclaration styling = style(node);
         if (node.hasAttr("style")) {
             Arrays.stream(node.attr("style").trim().split(";")).filter(s -> !s.isEmpty()).map(s -> s.split(":"))
-                    .peek(props -> System.out.println(Arrays.toString(props)))
                     .forEach(props -> styling.setProperty(props[0].trim(), props[1].trim(), ""));
         }
         if (node instanceof TextNode) {
@@ -117,14 +135,21 @@ public class Mapper {
             }
             return new Pair<>(t, styling);
         } else if (node instanceof Element && getDisplayType(styling) != DisplayType.NONE) {
+            ElementWrapper wrapper;
             if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
-                return new Pair<>(InputElementMapper.map((Element) node), styling);
+                wrapper = new ElementWrapper(InputElementMapper.map((Element) node));
+                wrapper.setStyling(styling);
+                return new Pair<>(wrapper, styling);
             } else if (node.childNodeSize() > 0) {
-                return new Pair<>(DisplayMapper.map(node, styling, this::map), styling);
+                wrapper = new ElementWrapper(DisplayMapper.map(node, styling, this::map));
+                wrapper.setStyling(styling);
+                return new Pair<>(wrapper, styling);
             } else {
                 Group g = new Group();
                 g.setUserData(node);
-                return new Pair<>(g, styling);
+                wrapper = new ElementWrapper(g);
+                wrapper.setStyling(styling);
+                return new Pair<>(wrapper, styling);
             }
         } else {
             Group g = new Group();
@@ -137,5 +162,12 @@ public class Mapper {
         DisplayType dt = DisplayType.read(styling.getPropertyValue("display").isEmpty()
                 ? "inline-block" : styling.getPropertyValue("display"));
         return dt;
+    }
+
+    private static boolean isStyleSheetLink(Element element) {
+        return ((element.hasAttr("as") && element.attr("as").equals("style"))
+                || (element.hasAttr("type") && element.attr("type").equals("text/css")
+                && element.hasAttr("rel") && element.attr("rel").equals("stylesheet")))
+                && element.hasAttr("href");
     }
 }

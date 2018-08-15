@@ -48,15 +48,12 @@ body {
     display: block;
     margin: 8px
 }
-body:-webkit-full-page-media {
-    background-color: rgb(0, 0, 0)
-}
 p {
     display: block;
-    -webkit-margin-before: 1__qem;
-    -webkit-margin-after: 1__qem;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 1pt;
+    margin-right: 1pt;
+    padding-left: 0;
+    padding-right: 0;
 }
 div {
     display: block
@@ -78,20 +75,20 @@ address {
 }
 blockquote {
     display: block;
-    -webkit-margin-before: 1__qem;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 40px;
-    -webkit-margin-end: 40px;
+    margin-left: 1pt;
+    margin-right: 1em;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 figcaption {
     display: block
 }
 figure {
     display: block;
-    -webkit-margin-before: 1em;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 40px;
-    -webkit-margin-end: 40px;
+    margin-left: 1em;
+    margin-right: 1em;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 q {
     display: inline
@@ -109,10 +106,10 @@ center {
 }
 hr {
     display: block;
-    -webkit-margin-before: 0.5em;
-    -webkit-margin-after: 0.5em;
-    -webkit-margin-start: auto;
-    -webkit-margin-end: auto;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    padding-left: auto;
+    padding-right: auto;
     border-style: inset;
     border-width: 1px
 }
@@ -126,59 +123,59 @@ video {
 h1 {
     display: block;
     font-size: 2em;
-    -webkit-margin-before: 0.67__qem;
-    -webkit-margin-after: 0.67em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 0.67pt;
+    margin-right: 0.67em;
+    padding-left: 0;
+    padding-right: 0;
     font-weight: bold
 }
 article h1, aside h1, nav h1, section h1 {
     font-size: 1.5em;
-    -webkit-margin-before: 0.83__qem;
-    -webkit-margin-after: 0.83em;
+    margin-left: 0.83pt;
+    margin-right: 0.83em;
 }
 h2 {
     display: block;
     font-size: 1.5em;
-    -webkit-margin-before: 0.83__qem;
-    -webkit-margin-after: 0.83em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 0.83pt;
+    margin-right: 0.83em;
+    padding-left: 0;
+    padding-right: 0;
     font-weight: bold
 }
 h3 {
     display: block;
     font-size: 1.17em;
-    -webkit-margin-before: 1__qem;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 1pt;
+    margin-right: 1em;
+    padding-left: 0;
+    padding-right: 0;
     font-weight: bold
 }
 h4 {
     display: block;
-    -webkit-margin-before: 1.33__qem;
-    -webkit-margin-after: 1.33em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 1.33pt;
+    margin-right: 1.33em;
+    padding-left: 0;
+    padding-right: 0;
     font-weight: bold
 }
 h5 {
     display: block;
     font-size: .83em;
-    -webkit-margin-before: 1.67__qem;
-    -webkit-margin-after: 1.67em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 1.67pt;
+    margin-right: 1.67em;
+    padding-left: 0;
+    padding-right: 0;
     font-weight: bold
 }
 h6 {
     display: block;
     font-size: .67em;
-    -webkit-margin-before: 2.33__qem;
-    -webkit-margin-after: 2.33em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 2.33pt;
+    margin-right: 2.33em;
+    padding-left: 0;
+    padding-right: 0;
     font-weight: bold
 }
 /* tables */
@@ -233,20 +230,20 @@ caption {
 ul, menu, dir {
     display: block;
     list-style-type: disc;
-    -webkit-margin-before: 1__qem;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
-    -webkit-padding-start: 40px
+    margin-left: 1pt;
+    margin-right: 1em;
+    padding-left: 0;
+    padding-right: 0;
+    padding-left: 40px
 }
 ol {
     display: block;
     list-style-type: decimal;
-    -webkit-margin-before: 1__qem;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
-    -webkit-padding-start: 40px
+    margin-left: 1pt;
+    margin-right: 1em;
+    padding-left: 0;
+    padding-right: 0;
+    padding-left: 40px
 }
 li {
     display: list-item;
@@ -260,43 +257,43 @@ ol ol ul, ol ul ul, ul ol ul, ul ul ul {
 }
 dd {
     display: block;
-    -webkit-margin-start: 40px
+    padding-left: 40px
 }
 dl {
     display: block;
-    -webkit-margin-before: 1__qem;
-    -webkit-margin-after: 1em;
-    -webkit-margin-start: 0;
-    -webkit-margin-end: 0;
+    margin-left: 1pt;
+    margin-right: 1em;
+    padding-left: 0;
+    padding-right: 0;
 }
 dt {
     display: block
 }
 ol ul, ul ol, ul ul, ol ol {
-    -webkit-margin-before: 0;
-    -webkit-margin-after: 0
+    margin-left: 0;
+    margin-right: 0
 }
 /* form elements 
 form {
     display: block;
-    margin-top: 0__qem;
+    margin-top: 0pt;
 }
 label {
     cursor: default;
 }
 legend {
     display: block;
-    -webkit-padding-start: 2px;
-    -webkit-padding-end: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
     border: none
 }
 fieldset {
     display: block;
-    -webkit-margin-start: 2px;
-    -webkit-margin-end: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
     -webkit-padding-before: 0.35em;
-    -webkit-padding-start: 0.75em;
-    -webkit-padding-end: 0.75em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
     -webkit-padding-after: 0.625em;
     border: 2px groove ThreeDFace;
     min-width: -webkit-min-content;
@@ -309,7 +306,7 @@ input, textarea, keygen, select, button, meter, progress {
     -webkit-writing-mode: horizontal-tb !important;
 }
 */input, textarea, keygen, select, button {
-    margin: 0__qem;
+    margin: 0pt;
     font: -webkit-small-control;
     text-rendering: auto;
     color: initial;
@@ -352,7 +349,7 @@ input::-webkit-clear-button {
     display: inline-block;
     flex: none;
     -webkit-user-modify: read-only !important;
-    -webkit-margin-start: 2px;
+    padding-left: 2px;
     opacity: 0;
     pointer-events: none;
 }
@@ -365,7 +362,7 @@ input[type="search" i]::-webkit-search-cancel-button {
     display: block;
     flex: none;
     -webkit-user-modify: read-only !important;
-    -webkit-margin-start: 1px;
+    padding-left: 1px;
     opacity: 0;
     pointer-events: none;
 }
@@ -765,7 +762,7 @@ pre, xmp, plaintext, listing {
     display: block;
     font-family: monospace;
     white-space: pre;
-    margin: 1__qem 0
+    margin: 1pt 0
 }
 mark {
     background-color: yellow;
@@ -866,7 +863,7 @@ summary::-webkit-details-marker {
     display: inline-block;
     width: 0.66em;
     height: 0.66em;
-    -webkit-margin-end: 0.4em;
+    padding-right: 0.4em;
 }
 template {
     display: none
