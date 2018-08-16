@@ -36,6 +36,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -47,7 +48,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
@@ -68,6 +72,8 @@ public class Main {
     @FXML
     private HBox tabBar;
     @FXML
+    private VBox header;
+    @FXML
     private TextField omnibar;
     @FXML
     private ScrollPane content;
@@ -75,6 +81,8 @@ public class Main {
     private Label min1, min2;
     @FXML
     private Circle lighting;
+    @FXML
+    private Rectangle lightingClip;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -117,6 +125,9 @@ public class Main {
                 s.addEventHandler(KeyEvent.KEY_PRESSED, keyListener);
             }
         });
+        lightingClip.widthProperty().bind(header.widthProperty());
+        lightingClip.heightProperty().bind(header.heightProperty());
+        root.addEventFilter(MouseEvent.MOUSE_MOVED, this::trackLighting);
     }
 
     @FXML
@@ -128,10 +139,8 @@ public class Main {
 
     private static final double difference = 2.5;
 
-    @FXML
-    private void sizing() {
-        ((Stage) root.getScene().getWindow()).setMaximized(!((Stage) root.getScene().getWindow()).isMaximized());
-        if (((Stage) root.getScene().getWindow()).isMaximized()) {
+    private void adjustMaximizeIcon(boolean maximized) {
+        if (maximized) {
             min1.setTranslateX(-difference);
             min1.setTranslateY(difference / 2);
             min2.setTranslateX(difference);
@@ -144,12 +153,39 @@ public class Main {
         }
     }
 
+    private double mix, miy, miw, mih;
+
+    @FXML
+    private void sizing() {
+        maximized = !maximized;
+        adjustMaximizeIcon(maximized);
+        if (!maximized) {
+            stageX().setValue(mix);
+            stageY().setValue(miy);
+            stageWidth().setValue(miw);
+            stageHeight().setValue(mih);
+        } else {
+            mix = stageX().getValue();
+            miy = stageY().getValue();
+            miw = stageWidth().getValue();
+            mih = stageHeight().getValue();
+            Rectangle2D bounds = getCurrentScreen().getVisualBounds();
+            stageX().setValue(bounds.getMinX());
+            stageY().setValue(bounds.getMinY());
+            stageWidth().setValue(bounds.getWidth());
+            stageHeight().setValue(bounds.getHeight());
+        }
+    }
+
+    private boolean maximized;
+
     private final Timeline animate = new Timeline();
 
-    private double initX = -1, initY = -1, initW = -1, initH = -1;
+    private double initY = -1, initH = -1;
 
+    private boolean iAdded;
     private final ChangeListener<Boolean> iconifiedListener = (o, b, s) -> {
-        if (b) {
+        if (!s) {
             stageY().setValue(initY);
             fade(() -> {
             }, false);
@@ -159,25 +195,18 @@ public class Main {
 
     @FXML
     private void minimize() {
-        fade(() -> ((Stage) root.getScene().getWindow()).setIconified(true), true);
-        if (initX > -1) {
-//            stageX().setValue(initX);
-            stageY().setValue(initY);
-//            stageWidth().setValue(initW);
-//            stageHeight().setValue(initH);
-        }
-        initX = stageX().getValue();
+        fade(() -> getStage().setIconified(true), true);
         initY = stageY().getValue();
-        initW = stageWidth().getValue();
         initH = stageHeight().getValue();
-        animate.getKeyFrames().add(new KeyFrame(Duration.millis(300), e -> stageY().setValue(initY),
-                //                    new KeyValue(stageX(), initX + initW * 0.1),
+        animate.getKeyFrames().add(new KeyFrame(Duration.millis(300), e -> {
+            stageY().setValue(initY);
+        },
                 new KeyValue(stageY(), initY + initH * 0.1)));
-//                    new KeyValue(stageWidth(), initW * 0.9),
-//                    new KeyValue(stageHeight(), initH * 0.9)));
         animate.play();
-        ((Stage) root.getScene().getWindow()).iconifiedProperty().removeListener(iconifiedListener);
-        ((Stage) root.getScene().getWindow()).iconifiedProperty().addListener(iconifiedListener);
+        if (!iAdded) {
+            iAdded = true;
+            getStage().iconifiedProperty().addListener(iconifiedListener);
+        }
     }
 
     private void fade(Runnable onFinish, boolean out) {
@@ -238,7 +267,7 @@ public class Main {
 
             @Override
             public void setValue(Double value) {
-                root.getScene().getWindow().setWidth(value);
+                root.getScene().getWindow().setWidth(Math.max(value, 300));
             }
         } : stageWidth;
     }
@@ -252,7 +281,7 @@ public class Main {
 
             @Override
             public void setValue(Double value) {
-                root.getScene().getWindow().setHeight(value);
+                root.getScene().getWindow().setHeight(Math.max(value, 100));
             }
         } : stageHeight;
     }
@@ -405,35 +434,65 @@ public class Main {
 
     @FXML
     private void onStageDrag(MouseEvent m) {
+        if (maximized) {
+            sizing();
+        }
         stageX().setValue(m.getScreenX() + sx);
         stageY().setValue(m.getScreenY() + sy);
     }
 
+    @FXML
+    private void onStageClick(MouseEvent m) {
+        if (m.isStillSincePress() && m.getClickCount() > 1) {
+            sizing();
+        }
+    }
+
     private double ix, iy, iw, ih, px, py;
+    private boolean set;
 
     @FXML
     private void resizeLeft(MouseEvent m) {
+        if (maximized) {
+            sizing();
+            trySetResizeValues();
+        }
         m.consume();
-        ((Stage) root.getScene().getWindow()).setMaximized(false);
-        stageX().setValue(ix + m.getScreenX() - px);
-        stageWidth().setValue(iw + px - m.getScreenX());
+        if (stageWidth().getValue() > 300) {
+            stageX().setValue(ix + m.getScreenX() - px);
+            stageWidth().setValue(iw + px - m.getScreenX());
+        }
     }
 
     @FXML
     private void resizeRight(MouseEvent m) {
+        if (maximized) {
+            sizing();
+            trySetResizeValues();
+        }
         m.consume();
         stageWidth().setValue(iw + m.getScreenX() - px);
     }
 
     @FXML
     private void resizeTop(MouseEvent m) {
+        if (maximized) {
+            sizing();
+            trySetResizeValues();
+        }
         m.consume();
-        stageY().setValue(iy + m.getScreenY() - py);
-        stageHeight().setValue(ih + py - m.getScreenY());
+        if (stageHeight().getValue() > 100) {
+            stageY().setValue(iy + m.getScreenY() - py);
+            stageHeight().setValue(ih + py - m.getScreenY());
+        }
     }
 
     @FXML
     private void resizeBottom(MouseEvent m) {
+        if (maximized) {
+            sizing();
+            trySetResizeValues();
+        }
         m.consume();
         stageHeight().setValue(ih + m.getScreenY() - py);
     }
@@ -464,6 +523,7 @@ public class Main {
 
     @FXML
     private void resizePress(MouseEvent m) {
+        set = false;
         m.consume();
         trySetResizeValues();
         px = m.getScreenX();
@@ -471,7 +531,8 @@ public class Main {
     }
 
     private void trySetResizeValues() {
-        if (!((Stage) root.getScene().getWindow()).isMaximized()) {
+        if (!maximized && !set) {
+            set = true;
             ix = stageX().getValue();
             iy = stageY().getValue();
             iw = stageWidth().getValue();
@@ -481,8 +542,22 @@ public class Main {
 
     @FXML
     private void trackLighting(MouseEvent m) {
-        m.consume();
         lighting.setCenterX(m.getX());
         lighting.setCenterY(m.getY());
+    }
+
+    private Stage getStage() {
+        return (Stage) root.getScene().getWindow();
+    }
+
+    private Screen getCurrentScreen() {
+        return Screen.getScreensForRectangle(stageX().getValue(), stageY().getValue(),
+                stageWidth().getValue(), stageHeight().getValue())
+                .stream().filter(s -> s.getVisualBounds().contains(
+                stageX().getValue() + stageWidth().getValue() / 2,
+                stageY().getValue() + stageHeight().getValue() / 2))
+                .findAny().orElse(Screen.getScreensForRectangle(
+                        stageX().getValue(), stageY().getValue(),
+                        stageWidth().getValue(), stageHeight().getValue()).get(0));
     }
 }
