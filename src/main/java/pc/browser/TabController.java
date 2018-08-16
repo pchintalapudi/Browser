@@ -13,6 +13,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -29,6 +30,8 @@ import pc.browser.resources.Resources;
  */
 public class TabController extends AnchorPane {
 
+    @FXML
+    private HBox tabBody;
     @FXML
     private HBox tabContent;
     @FXML
@@ -70,23 +73,29 @@ public class TabController extends AnchorPane {
 
     @FXML
     private void select() {
-        if (onSelect != null) {
-            this.onSelect.run();
+        if (onClick != null) {
+            this.onClick.run();
         }
     }
 
-    private Runnable onSelect;
+    private Runnable onClick;
 
-    public void onSelect(Runnable onSelect) {
-        if (onSelect != null) {
-            this.onSelect = onSelect;
+    public void onClick(Runnable onClick) {
+        if (onClick != null) {
+            this.onClick = onClick;
         }
+    }
+
+    private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
+
+    public void highlightSelected(boolean selected) {
+        tabBody.pseudoClassStateChanged(SELECTED, selected);
     }
 
     public void setTitle(String title) {
         this.tabTitle.setText(title);
     }
-    
+
     public String getTitle() {
         return tabTitle.getText();
     }
@@ -124,7 +133,7 @@ public class TabController extends AnchorPane {
     public void setEnteredText(String enteredText) {
         this.enteredText = enteredText;
     }
-    
+
     public ObjectProperty<Parent> sceneGraphProperty() {
         return sceneGraphProperty;
     }

@@ -8,14 +8,21 @@ package pc.browser;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -27,18 +34,20 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.jsoup.Jsoup;
@@ -62,6 +71,10 @@ public class Main {
     private TextField omnibar;
     @FXML
     private ScrollPane content;
+    @FXML
+    private Label min1, min2;
+    @FXML
+    private Circle lighting;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -71,17 +84,15 @@ public class Main {
         return t;
     });
 
-    private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
-
     @FXML
     private void initialize() {
         Bindings.bindContent(tabBar.getChildren(), tabs);
         focusedTab.addListener((o, b, s) -> {
             if (b != null) {
-                b.pseudoClassStateChanged(SELECTED, false);
+                b.highlightSelected(false);
             }
             if (s != null) {
-                s.pseudoClassStateChanged(SELECTED, true);
+                s.highlightSelected(true);
             }
             switchToTab(s);
         });
@@ -115,15 +126,31 @@ public class Main {
         animate.play();
     }
 
+    private static final double difference = 2.5;
+
     @FXML
     private void sizing() {
         ((Stage) root.getScene().getWindow()).setMaximized(!((Stage) root.getScene().getWindow()).isMaximized());
+        if (((Stage) root.getScene().getWindow()).isMaximized()) {
+            min1.setTranslateX(-difference);
+            min1.setTranslateY(difference / 2);
+            min2.setTranslateX(difference);
+            min2.setTranslateY(-difference / 2);
+        } else {
+            min1.setTranslateX(0);
+            min1.setTranslateY(0);
+            min2.setTranslateX(0);
+            min2.setTranslateY(0);
+        }
     }
 
     private final Timeline animate = new Timeline();
 
+    private double initX = -1, initY = -1, initW = -1, initH = -1;
+
     private final ChangeListener<Boolean> iconifiedListener = (o, b, s) -> {
         if (b) {
+            stageY().setValue(initY);
             fade(() -> {
             }, false);
             animate.play();
@@ -137,16 +164,13 @@ public class Main {
 //            stageX().setValue(initX);
             stageY().setValue(initY);
 //            stageWidth().setValue(initW);
-            stageHeight().setValue(initH);
+//            stageHeight().setValue(initH);
         }
         initX = stageX().getValue();
         initY = stageY().getValue();
         initW = stageWidth().getValue();
         initH = stageHeight().getValue();
-        animate.getKeyFrames().add(new KeyFrame(Duration.millis(300), e -> {
-            stageX().setValue(initX);
-            stageY().setValue(initY);
-        },
+        animate.getKeyFrames().add(new KeyFrame(Duration.millis(300), e -> stageY().setValue(initY),
                 //                    new KeyValue(stageX(), initX + initW * 0.1),
                 new KeyValue(stageY(), initY + initH * 0.1)));
 //                    new KeyValue(stageWidth(), initW * 0.9),
@@ -155,8 +179,6 @@ public class Main {
         ((Stage) root.getScene().getWindow()).iconifiedProperty().removeListener(iconifiedListener);
         ((Stage) root.getScene().getWindow()).iconifiedProperty().addListener(iconifiedListener);
     }
-
-    private double initX = -1, initY = -1, initW = -1, initH = -1;
 
     private void fade(Runnable onFinish, boolean out) {
         animate.stop();
@@ -273,8 +295,7 @@ public class Main {
                             content.setContent(p);
                         }
                     });
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (IOException ex) {
                 }
             } catch (IOException ex) {
                 safety(original);
@@ -325,7 +346,7 @@ public class Main {
     private void newTab() {
         TabController next = new TabController();
         next.onClose(() -> closeTab(next));
-        next.onSelect(() -> focusedTab.set(next));
+        next.onClick(() -> focusedTab.set(next));
         tabs.add(next);
         focusedTab.set(next);
     }
@@ -353,16 +374,115 @@ public class Main {
 
     @FXML
     private void newWindow() {
-        ProcessBuilder pb = new ProcessBuilder();
         try {
-            String path = Browser.class.getResource("Browser.class")
-                    .toString().replace("file:", "").replace("/Browser.class", "")
-                    .replace("/pc/browser", "");
-            System.out.println(path);
-            pb.inheritIO().command("java", "-cp", path,
-                    "pc.browser.Browser").start();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            List<String> commands = new ArrayList<>();
+            commands.add(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java");
+            commands.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
+            commands.add("-cp");
+            commands.add(ManagementFactory.getRuntimeMXBean().getClassPath());
+            commands.add(Browser.class.getName());
+            System.out.println(commands.stream().collect(Collectors.joining(" ")));
+            Process p = new ProcessBuilder().inheritIO().command(commands).start();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /*
+    ============================================================================
+    
+    Stage manipulation
+    
+    ============================================================================
+     */
+    private double sx, sy;
+
+    @FXML
+    private void onStagePress(MouseEvent m) {
+        sx = stageX().getValue() - m.getScreenX();
+        sy = stageY().getValue() - m.getScreenY();
+    }
+
+    @FXML
+    private void onStageDrag(MouseEvent m) {
+        stageX().setValue(m.getScreenX() + sx);
+        stageY().setValue(m.getScreenY() + sy);
+    }
+
+    private double ix, iy, iw, ih, px, py;
+
+    @FXML
+    private void resizeLeft(MouseEvent m) {
+        m.consume();
+        ((Stage) root.getScene().getWindow()).setMaximized(false);
+        stageX().setValue(ix + m.getScreenX() - px);
+        stageWidth().setValue(iw + px - m.getScreenX());
+    }
+
+    @FXML
+    private void resizeRight(MouseEvent m) {
+        m.consume();
+        stageWidth().setValue(iw + m.getScreenX() - px);
+    }
+
+    @FXML
+    private void resizeTop(MouseEvent m) {
+        m.consume();
+        stageY().setValue(iy + m.getScreenY() - py);
+        stageHeight().setValue(ih + py - m.getScreenY());
+    }
+
+    @FXML
+    private void resizeBottom(MouseEvent m) {
+        m.consume();
+        stageHeight().setValue(ih + m.getScreenY() - py);
+    }
+
+    @FXML
+    private void resizeLT(MouseEvent m) {
+        resizeLeft(m);
+        resizeTop(m);
+    }
+
+    @FXML
+    private void resizeRT(MouseEvent m) {
+        resizeRight(m);
+        resizeTop(m);
+    }
+
+    @FXML
+    private void resizeLB(MouseEvent m) {
+        resizeLeft(m);
+        resizeBottom(m);
+    }
+
+    @FXML
+    private void resizeRB(MouseEvent m) {
+        resizeRight(m);
+        resizeBottom(m);
+    }
+
+    @FXML
+    private void resizePress(MouseEvent m) {
+        m.consume();
+        trySetResizeValues();
+        px = m.getScreenX();
+        py = m.getScreenY();
+    }
+
+    private void trySetResizeValues() {
+        if (!((Stage) root.getScene().getWindow()).isMaximized()) {
+            ix = stageX().getValue();
+            iy = stageY().getValue();
+            iw = stageWidth().getValue();
+            ih = stageHeight().getValue();
+        }
+    }
+
+    @FXML
+    private void trackLighting(MouseEvent m) {
+        m.consume();
+        lighting.setCenterX(m.getX());
+        lighting.setCenterY(m.getY());
     }
 }

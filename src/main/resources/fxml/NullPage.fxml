@@ -3,7 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Point3D?>
 <?import javafx.scene.Group?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.PhongMaterial?>
@@ -11,9 +11,11 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.transform.Rotate?>
 
-<StackPane fx:id="root" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.resources.NullPageController">
+<!-- The styling for this page is going to hijack the styles normally reserved for the upper bars and the window-->
+
+<StackPane fx:id="root" styleClass="non-content" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <VBox alignment="CENTER" spacing="30.0">
+        <VBox alignment="CENTER" spacing="30.0" styleClass="null-back">
             <children>
                 <Group>
                     <children>
@@ -21,7 +23,7 @@
                             <children>
                                 <Box cache="true" cacheHint="ROTATE" depth="100.0" height="100.0" width="100.0">
                                     <transforms>
-                                        <Rotate fx:id="yRotate" angle="0.0" pivotX="0.0" pivotY="0.0" pivotZ="0.0">
+                                        <Rotate angle="45.0" pivotX="0.0" pivotY="0.0" pivotZ="0.0">
                                             <axis>
                                                 <Point3D x="0.0" y="1.0" z="0.0" />
                                             </axis>
@@ -45,11 +47,11 @@
                         </Group>
                     </children>
                 </Group>
-                <Label text="You haven't loaded anything yet!">
-                    <font>
-                        <Font size="32.0" />
-                    </font>
-                </Label>
+            <Hyperlink fx:id="luckyLink" text="Let's go somewhere!">
+               <font>
+                  <Font size="32.0" />
+               </font>
+            </Hyperlink>
             </children>
             <padding>
                 <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />

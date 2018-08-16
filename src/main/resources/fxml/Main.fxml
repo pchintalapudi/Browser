@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
@@ -11,91 +10,107 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
 
-<AnchorPane id="AnchorPane" fx:id="root" onMouseClicked="#requestFocus" prefHeight="900.0" prefWidth="1600.0" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
+<AnchorPane id="AnchorPane" fx:id="root" onMouseClicked="#requestFocus" onMouseMoved="#trackLighting" prefHeight="900.0" prefWidth="1600.0" style="-fx-background-color: transparent;" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
     <children>
-        <VBox alignment="TOP_CENTER" styleClass="background" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <Circle fx:id="lighting" fill="WHITE" radius="10.0" strokeType="INSIDE" />
+        <VBox alignment="TOP_CENTER" styleClass="transparentify" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <HBox alignment="CENTER_RIGHT" styleClass="background">
+                <VBox styleClass="non-content" VBox.vgrow="NEVER">
                     <children>
-                        <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="background" HBox.hgrow="ALWAYS">
+                        <HBox id="top-bar" alignment="CENTER_RIGHT">
                             <children>
-                                <HBox fx:id="tabBar" alignment="CENTER_LEFT" prefHeight="40.0">
-                                    <padding>
-                                        <Insets left="10.0" />
-                                    </padding>
-                                </HBox>
-                                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" onMouseDragged="#onStageDrag" onMousePressed="#onStagePress" spacing="10.0" HBox.hgrow="ALWAYS">
                                     <children>
-                                        <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                        <HBox fx:id="tabBar" alignment="CENTER_LEFT" prefHeight="40.0">
+                                            <padding>
+                                                <Insets left="10.0" />
+                                            </padding>
+                                        </HBox>
+                                        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                                             <children>
-                                                <Button mnemonicParsing="false" onAction="#newTab" prefHeight="25.0" prefWidth="25.0" style="-fx-border-color: #0088ff;" />
+                                                <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                                    <children>
+                                                        <Button mnemonicParsing="false" onAction="#newTab" prefHeight="25.0" prefWidth="25.0" style="-fx-border-color: #0088ff;" />
+                                                    </children>
+                                                </HBox>
                                             </children>
                                         </HBox>
                                     </children>
                                 </HBox>
-                            </children>
-                        </HBox>
-                        <HBox styleClass="background" HBox.hgrow="NEVER">
-                            <children>
-                                <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#minimize" prefWidth="60.0" styleClass="window-button">
+                                <HBox HBox.hgrow="NEVER">
                                     <children>
-                                        <Group>
+                                        <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#minimize" pickOnBounds="true" prefWidth="60.0" styleClass="window-button">
                                             <children>
-                                                <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="-" />
+                                                <Group>
+                                                    <children>
+                                                        <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="-" />
+                                                    </children>
+                                                </Group>
                                             </children>
-                                        </Group>
-                                    </children>
-                                </StackPane>
-                                <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#sizing" prefWidth="60.0" styleClass="window-button">
-                                    <children>
-                                        <Group translateY="2.0">
+                                        </StackPane>
+                                        <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#sizing" pickOnBounds="true" prefWidth="60.0" styleClass="window-button">
                                             <children>
-                                                <Label text="⃞" />
-                                                <Label text="⃞" />
+                                                <Group translateY="2.0">
+                                                    <children>
+                                                        <Label fx:id="min1" text="⃞" />
+                                                        <Label fx:id="min2" text="⃞" />
+                                                    </children>
+                                                </Group>
                                             </children>
-                                        </Group>
-                                    </children>
-                                </StackPane>
-                                <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#closeWindow" prefWidth="60.0" styleClass="close-button">
-                                    <children>
-                                        <Group>
+                                        </StackPane>
+                                        <StackPane maxWidth="-Infinity" minWidth="-Infinity" onMouseClicked="#closeWindow" pickOnBounds="true" prefWidth="60.0" styleClass="close-button">
                                             <children>
-                                                <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="×" />
+                                                <Group>
+                                                    <children>
+                                                        <Label scaleX="2.0" scaleY="2.0" scaleZ="2.0" text="×" />
+                                                    </children>
+                                                </Group>
                                             </children>
-                                        </Group>
-                                    </children>
-                                </StackPane>
-                            </children>
-                        </HBox>
-                    </children>
-                </HBox>
-                <VBox maxHeight="100.0" prefWidth="100.0" styleClass="util-bar">
-                    <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </padding>
-                    <children>
-                        <HBox alignment="CENTER_LEFT" spacing="10.0">
-                            <children>
-                                <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="5.0" HBox.hgrow="ALWAYS">
-                                    <children>
-                                        <Button fx:id="backButton" mnemonicParsing="false" onAction="#back" text="🡨" />
-                                        <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#forward" text="🡪" />
-                                        <Button fx:id="reloadButton" mnemonicParsing="false" onAction="#reload" text="↻" />
-                                        <TextField fx:id="omnibar" onAction="#load" styleClass="omnibar" HBox.hgrow="ALWAYS" />
+                                        </StackPane>
                                     </children>
                                 </HBox>
-                                <HBox fx:id="extensionButtons" alignment="CENTER_RIGHT" prefWidth="200.0" />
                             </children>
                         </HBox>
+                        <StackPane id="util-back" alignment="TOP_LEFT">
+                            <children>
+                                <VBox id="util-bar" maxHeight="100.0" prefWidth="100.0">
+                                    <padding>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </padding>
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                                    <children>
+                                                        <Button fx:id="backButton" mnemonicParsing="false" onAction="#back" text="🡨" />
+                                                        <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#forward" text="🡪" />
+                                                        <Button fx:id="reloadButton" mnemonicParsing="false" onAction="#reload" text="↻" />
+                                                        <TextField fx:id="omnibar" onAction="#load" id="omnibar" HBox.hgrow="ALWAYS" />
+                                                    </children>
+                                                </HBox>
+                                                <HBox fx:id="extensionButtons" alignment="CENTER_RIGHT" prefWidth="200.0" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </StackPane>
                     </children>
                 </VBox>
-                <ScrollPane fitToHeight="true" fitToWidth="true" styleClass="background" VBox.vgrow="ALWAYS" fx:id="content" />
+                <ScrollPane fx:id="content" fitToHeight="true" fitToWidth="true" styleClass="background" VBox.vgrow="ALWAYS" />
             </children>
         </VBox>
+        <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeLeft" onMousePressed="#resizePress" prefWidth="5.0" styleClass="rsz-l" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <AnchorPane layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeRight" onMousePressed="#resizePress" prefWidth="5.0" styleClass="rsz-r" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0" />
+        <AnchorPane layoutX="20.0" layoutY="20.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeRight" onMousePressed="#resizePress" prefHeight="40.0" prefWidth="2.0" styleClass="rsz-r" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <AnchorPane layoutX="30.0" layoutY="30.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeTop" onMousePressed="#resizePress" prefHeight="5.0" styleClass="rsz-t" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="180.0" AnchorPane.topAnchor="0.0" />
+        <AnchorPane onMouseDragged="#resizeTop" onMousePressed="#resizePress" prefHeight="2.0" prefWidth="180.0" styleClass="rsz-t" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <AnchorPane onMouseDragged="#resizeBottom" onMousePressed="#resizePress" prefHeight="5.0" styleClass="rsz-b" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+        <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeLT" onMousePressed="#resizePress" prefHeight="20.0" prefWidth="20.0" styleClass="rsz-lt" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeRT" onMousePressed="#resizePress" prefHeight="4.0" prefWidth="4.0" styleClass="rsz-rt" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+        <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeLB" onMousePressed="#resizePress" prefHeight="20.0" prefWidth="20.0" styleClass="rsz-lb" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+        <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#resizeRB" onMousePressed="#resizePress" prefHeight="20.0" prefWidth="20.0" styleClass="rsz-rb" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
-    <styleClass>
-        <String fx:value="root" />
-        <String fx:value="background" />
-    </styleClass>
 </AnchorPane>

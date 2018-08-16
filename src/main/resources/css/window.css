@@ -8,29 +8,75 @@ and open the template in the editor.
     Author     : prem
 */
 
+* {
+    back-main:black;
+    back-transp-slight:#000000bb;
+    back-transp-med:#00000088;
+    back-transp-dvis:#00000044;
+    back-transp-vis:#00000022;
 
-.root {
+    main-main:#0088ff;
+    main-transp-med:#0088ff88;
+    main-transp-dvis:#0088ff44;
+
+    back-inv:white;
+    back-inv-vis:#ffffff22;
+    back-inv-dvis:#ffffff44;
+}
+
+.button, .window-button, .close-button, .transparentify {
     -fx-background-color:transparent;
 }
 
-.button, .tab {
-    -fx-background-color:transparent;
+#top-bar {
+    -fx-background-color: back-transp-slight;
+}
+
+.non-content .text, .non-content .text-input {
+    -fx-fill: back-inv;
+    -fx-text-fill: back-inv;
+}
+
+.non-content .hyperlink:visited, .non-content .hyperlink:hover, .non-content .hyperlink:hover:visited {
+    -fx-border-width: 0;
+    -fx-underline: false;
+}
+
+.non-content .hyperlink:hover .text {
+    -fx-fill:main-transp-med;
+    -fx-text-fill:main-transp-med;
+}
+
+#main-bar, #util-back {
+    -fx-background-color: back-main;
+}
+
+#util-bar {
+    -fx-background-color:main-transp-dvis;
+}
+
+.null-back {
+    -fx-background-color:back-transp-slight;
+}
+
+.tab-back {
+    -fx-background-color:back-transp-dvis;
+}
+
+.tab {
+    -fx-background-color:back-transp-vis;
 }
 
 .tab:selected, .util-bar {
-    -fx-background-color:#0088ff44;
+    -fx-background-color:main-transp-med;
 }
 
 .button:hover, .tab:hover {
-    -fx-background-color:#0088ff88;
+    -fx-background-color:main-transp-med;
 }
 
 .button:pressed, .tab:hover {
-    -fx-background-color:#0088ffff;
-}
-
-.close-button {
-    -fx-background-color:transparent;
+    -fx-background-color:main-main
 }
 
 .close-button:hover {
@@ -41,21 +87,12 @@ and open the template in the editor.
     -fx-background-color:red;
 }
 
-.window-button {
-    -fx-background-color:transparent;
-}
-
 .window-button:hover {
-    -fx-background-color:#00000022;
+    -fx-background-color:back-inv-vis;
 }
 
 .window-button:pressed {
-    -fx-background-color:#00000044;
-}
-
-.root {
-    -fx-border-color:blue;
-    -fx-border-width:1;
+    -fx-background-color:back-inv-dvis;
 }
 
 .text-input {
@@ -64,40 +101,70 @@ and open the template in the editor.
     -fx-border-width:2;
 }
 
-.omnibar {
+#omnibar {
     -fx-background-color:transparent;
-    -fx-border-color:white;
+    -fx-border-color:ladder(back-main, back-inv 49%, back-main 50%);
     -fx-border-width:1;
 }
 
-.omnibar:hover {
-    -fx-background-color:#ffffff88;
+#omnibar:hover {
+    -fx-background-color:back-transp-med;
 }
 
-.omnibar:focused {
-    -fx-background-color:white;
+#omnibar:focused {
+    -fx-background-color:back-main;
 }
 
-.omnibar:pressed {
-    -fx-background-color:white;
-}
-
-.combo-box, .choice-box {
-    -fx-background-color:transparent;
-}
-
-.background {
-    -fx-background-color:transparent;
-}
-
-.combo-box:hover, .choice-box:hover {
-    -fx-background-color:derive(white, -5%);
-}
-
-.combo-box-popup .list-view, .combo-box-popup * {
-    -fx-background-color:derive(white, -5%);
+#omnibar:pressed {
+    -fx-background-color:back-main;
 }
 
 .highlight {
-    -fx-background-color:#0088ff44;
+    -fx-background-color:main-transp-dvis;
+}
+
+/*
+
+Window resize classes
+
+*/
+
+.rsz-l {
+    -fx-cursor:w-resize;
+    -fx-border-width:0 0 0 1;
+    -fx-border-color:blue;
+}
+
+.rsz-r {
+    -fx-cursor:e-resize;
+    -fx-border-width:0 1 0 0;
+    -fx-border-color:blue;
+}
+
+.rsz-t {
+    -fx-cursor:n-resize;
+    -fx-border-width:1 0 0 0;
+    -fx-border-color:blue;
+}
+
+.rsz-b {
+    -fx-cursor:s-resize;
+    -fx-border-width:0 0 1 0;
+    -fx-border-color:blue;
+}
+
+.rsz-lt {
+    -fx-cursor:nw-resize;
+}
+
+.rsz-rt {
+    -fx-cursor:ne-resize;
+}
+
+.rsz-lb {
+    -fx-cursor:sw-resize;
+}
+
+.rsz-rb {
+    -fx-cursor:se-resize;
 }

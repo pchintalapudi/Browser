@@ -46,7 +46,7 @@ script {
 /* generic block-level elements */
 body {
     display: block;
-    margin: 8px
+    margin: 8px;
 }
 p {
     display: block;

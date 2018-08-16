@@ -11,6 +11,7 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.beans.value.WritableValue;
 import javafx.scene.Scene;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
@@ -24,9 +25,10 @@ public class Browser extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.initStyle(StageStyle.UNDECORATED);
+        primaryStage.initStyle(StageStyle.TRANSPARENT);
         primaryStage.setOpacity(0);
         primaryStage.setScene(new Scene(Resources.directLoad("Main.fxml"), 1600, 900));
+        primaryStage.getScene().setFill(Color.TRANSPARENT);
         Timeline showTimeline = new Timeline();
         WritableValue<Double> stageOpacity = new WritableValue<Double>() {
             @Override
@@ -42,6 +44,7 @@ public class Browser extends Application {
         showTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(300), new KeyValue(stageOpacity, 1d)));
         primaryStage.setOnShown(we -> showTimeline.play());
         primaryStage.show();
+        System.out.println(primaryStage.getScene().getCamera());
     }
 
     public static void main(String[] args) {
