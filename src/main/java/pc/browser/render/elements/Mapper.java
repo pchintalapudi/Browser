@@ -122,8 +122,18 @@ public class Mapper {
     private Pair<javafx.scene.Node, CSSStyleDeclaration> map(Node node) {
         CSSStyleDeclaration styling = style(node);
         if (node.hasAttr("style")) {
-            Arrays.stream(node.attr("style").trim().split(";")).filter(s -> !s.isEmpty()).map(s -> s.split(":"))
-                    .forEach(props -> styling.setProperty(props[0].trim(), props[1].trim(), ""));
+            CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
+            Arrays.stream(node.attr("style").trim().split(";")).filter(s -> !s.isEmpty()).map(s -> {
+                try {
+                    return parser.parseStyleDeclaration(new InputSource(new StringReader(s)));
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }).forEach(sd -> {
+                for (int i = 0; i < sd.getLength(); i++) {
+                    styling.setProperty(sd.item(i), sd.getPropertyValue(sd.item(i)), sd.getPropertyPriority(sd.item(i)));
+                }
+            });
         }
         if (node instanceof TextNode) {
             Text t = new Text(((TextNode) node).text());
