@@ -48,11 +48,7 @@ public class ElementWrapper extends StackPane {
         super.getChildren().add(inner = new InnerWrapper(n));
         super.setAlignment(Pos.TOP_LEFT);
         inner.setAlignment(Pos.TOP_LEFT);
-        inner.backgroundProperty().bind(Bindings.createObjectBinding(()
-                -> stylingProperty.get().getPropertyValue("background-color").isEmpty()
-                ? Background.EMPTY : new Background(new BackgroundFill(
-                        Color.web(stylingProperty.get().getPropertyValue("background-color")), null, null)),
-                stylingProperty));
+        inner.backgroundProperty().bind(Bindings.createObjectBinding(() -> getCSSBackground(), stylingProperty));
         paddingProperty().bind(Bindings.createObjectBinding(this::getMargins, stylingProperty));
         inner.paddingProperty().bind(Bindings.createObjectBinding(this::getPaddings, stylingProperty));
     }
@@ -198,5 +194,19 @@ public class ElementWrapper extends StackPane {
 
     public void setStyling(CSSStyleDeclaration styling) {
         stylingProperty.set(styling);
+    }
+
+    private Background getCSSBackground() {
+        String bcolor = stylingProperty.get().getPropertyValue("background-color");
+        if (bcolor.isEmpty()) {
+            bcolor = stylingProperty.get().getPropertyValue("background");
+        }
+        try {
+            return bcolor.isEmpty() ? Background.EMPTY : new Background(new BackgroundFill(Color.web(bcolor), null, null));
+        } catch (IllegalArgumentException ex) {
+            System.out.println("styling-block:");
+            System.out.println(stylingProperty.get().getCssText());
+            return Background.EMPTY;
+        }
     }
 }

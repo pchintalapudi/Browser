@@ -348,7 +348,8 @@ public class Main {
                             content.setContent(p);
                         }
                     });
-                } catch (IOException ex) {
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             } catch (IOException ex) {
                 safety(original);
