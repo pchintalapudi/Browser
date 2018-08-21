@@ -38,17 +38,25 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
@@ -91,6 +99,23 @@ public class Main {
         t.setDaemon(true);
         return t;
     });
+
+    private final ContextMenu windowMenu = new ContextMenu(), pageMenu = new ContextMenu();
+
+    public Main() {
+        MenuItem bScreenshot = new MenuItem("Take Application Screenshot");
+        bScreenshot.setOnAction(e -> copy(imageBrowser()));
+        windowMenu.getItems().add(bScreenshot);
+        MenuItem pScreenshot = new MenuItem("Take Page Screenshot");
+        bScreenshot.setOnAction(e -> copy(imageWebImage()));
+        pageMenu.getItems().add(pScreenshot);
+        MenuItem sScreenshot = new MenuItem("Take Entire Page Screenshot");
+        bScreenshot.setOnAction(e -> copy(imageWebScrolledContent()));
+        pageMenu.getItems().add(sScreenshot);
+        MenuItem inspectElement = new MenuItem("Inspect Element");
+        inspectElement.setOnAction(e -> SceneGraphAnalyzer.show(content.getContent()));
+        pageMenu.getItems().add(inspectElement);
+    }
 
     @FXML
     private void initialize() {
@@ -318,7 +343,6 @@ public class Main {
                                     new InputStreamReader(Resources.getCSS("blink-user-agent.css")
                                             .openStream()))), null, null)).map(document);
                     Platform.runLater(() -> {
-                        SceneGraphAnalyzer.show(p);
                         current.sceneGraphProperty().set(p);
                         if (current == focusedTab.get()) {
                             content.setContent(p);
@@ -341,9 +365,6 @@ public class Main {
         }
         try {
             String text0 = text.replace("https://", "http://");
-            if (!text0.contains("www.")) {
-                text0 = "www." + text0;
-            }
             if (!text0.contains("http://")) {
                 text0 = "http://" + text0;
             }
@@ -417,6 +438,43 @@ public class Main {
         }
     }
 
+    private static final Clipboard SYSTEM_CLIPBOARD = Clipboard.getSystemClipboard();
+
+    private void copy(Image image) {
+        ClipboardContent cc = new ClipboardContent();
+        cc.putImage(image);
+        SYSTEM_CLIPBOARD.setContent(cc);
+    }
+
+    private Image imageBrowser() {
+        SnapshotParameters sp = new SnapshotParameters();
+        sp.setFill(Color.TRANSPARENT);
+        return root.snapshot(sp, null);
+    }
+
+    private Image imageWebImage() {
+        SnapshotParameters sp = new SnapshotParameters();
+        sp.setFill(Color.WHITE);
+        return content.snapshot(sp, null);
+    }
+
+    private Image imageWebScrolledContent() {
+
+        SnapshotParameters sp = new SnapshotParameters();
+        sp.setFill(Color.WHITE);
+        return content.getContent().snapshot(sp, null);
+    }
+
+    @FXML
+    private void pageClick(MouseEvent m) {
+        if (m.getButton() == MouseButton.SECONDARY) {
+            pageMenu.show(getStage(), m.getScreenX(), m.getScreenY());
+        } else {
+            pageMenu.hide();
+        }
+        m.consume();
+    }
+
     /*
     ============================================================================
     
@@ -443,8 +501,14 @@ public class Main {
 
     @FXML
     private void onStageClick(MouseEvent m) {
-        if (m.isStillSincePress() && m.getClickCount() > 1) {
-            sizing();
+        if (m.getButton() == MouseButton.PRIMARY) {
+            windowMenu.hide();
+            if (m.isStillSincePress() && m.getClickCount() > 1) {
+                sizing();
+            }
+        } else if (m.getButton() == MouseButton.SECONDARY) {
+            windowMenu.show(getStage(), m.getScreenX(), m.getScreenY());
+            m.consume();
         }
     }
 
