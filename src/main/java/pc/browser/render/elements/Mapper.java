@@ -41,10 +41,11 @@ import org.w3c.dom.css.CSSStyleSheet;
 public class Mapper {
 
     private final CSSStyleSheet stylesheet;
-    private List<CSSStyleRule> rules;
+    private final List<CSSStyleRule> rules = new ArrayList<>();
 
     public Mapper(CSSStyleSheet stylesheet) {
         this.stylesheet = stylesheet;
+        parseStylesheet();
     }
 
     public Mapper appendStyleSheet(CSSStyleSheetImpl stylesheet) {
@@ -53,7 +54,6 @@ public class Mapper {
     }
 
     private void parseStylesheet() {
-        rules = new ArrayList<>();
         for (int i = 0; i < stylesheet.getCssRules().getLength(); i++) {
             CSSRule rule = stylesheet.getCssRules().item(i);
             if (rule instanceof CSSStyleRule) {
@@ -64,9 +64,6 @@ public class Mapper {
 
     private CSSStyleDeclaration style(Node domIdentity) {
         CSSStyleDeclaration style;
-        if (rules == null) {
-            parseStylesheet();
-        }
         Element styler = domIdentity instanceof Element ? (Element) domIdentity
                 : domIdentity instanceof TextNode ? (Element) domIdentity.parent() : null;
         style = styler == null ? null : rules.stream().filter(r
@@ -95,14 +92,10 @@ public class Mapper {
                     throw new RuntimeException(ex);
                 }
             }).forEach(rl -> {
-                try {
-                    for (int i = 0; i < rl.getLength(); i++) {
-                        if (rl.item(i) instanceof CSSStyleRule) {
-                            rules.add((CSSStyleRule) rl.item(i));
-                        }
+                for (int i = 0; i < rl.getLength(); i++) {
+                    if (rl.item(i) != null && rl.item(i) instanceof CSSStyleRule) {
+                        rules.add((CSSStyleRule) rl.item(i));
                     }
-                } catch (NullPointerException expected) {
-                    //If the css file is poorly written, errors will show up here.
                 }
             });
             CSSRuleList documentRules = new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
