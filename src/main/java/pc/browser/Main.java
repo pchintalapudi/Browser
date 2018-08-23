@@ -341,20 +341,13 @@ public class Main {
                     current.setTitle(document.head().getElementsByTag("title").text());
                     current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
                 });
-                try {
-                    Parent p = (Parent) new Mapper(new CSSOMParser(new SACParserCSS3())
-                            .parseStyleSheet(new InputSource(new BufferedReader(
-                                    new InputStreamReader(Resources.getCSS("blink-user-agent.css")
-                                            .openStream()))), null, null)).map(document);
-                    Platform.runLater(() -> {
-                        current.sceneGraphProperty().set(p);
-                        if (current == focusedTab.get()) {
-                            content.setContent(p);
-                        }
-                    });
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                Parent p = (Parent) new Mapper().map(document);
+                Platform.runLater(() -> {
+                    current.sceneGraphProperty().set(p);
+                    if (current == focusedTab.get()) {
+                        content.setContent(p);
+                    }
+                });
             } catch (IOException ex) {
                 if (ex instanceof HttpStatusException) {
 

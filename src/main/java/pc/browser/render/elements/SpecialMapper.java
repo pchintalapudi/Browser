@@ -5,11 +5,7 @@
  */
 package pc.browser.render.elements;
 
-import com.steadystate.css.parser.CSSOMParser;
-import com.steadystate.css.parser.SACParserCSS3;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -22,9 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSStyleDeclaration;
-import pc.browser.resources.Resources;
 
 /**
  *
@@ -44,10 +38,7 @@ public class SpecialMapper {
                 s.setAlignment(Pos.TOP_LEFT);
                 new Thread(() -> {
                     try {
-                        Node n = new Mapper(new CSSOMParser(new SACParserCSS3())
-                                .parseStyleSheet(new InputSource(new BufferedReader(
-                                        new InputStreamReader(Resources.getCSS("blink-user-agent.css")
-                                                .openStream()))), null, null)).map(Jsoup.connect(element.absUrl("src")).get());
+                        Node n = new Mapper().map(Jsoup.connect(element.absUrl("src")).get());
                         Platform.runLater(() -> s.getChildren().add(n));
                     } catch (IOException ex) {
                         Logger.getLogger(SpecialMapper.class.getName()).log(Level.SEVERE, null, ex);
