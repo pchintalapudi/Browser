@@ -107,14 +107,15 @@
         <Group>
             <children>
                 <Circle fx:id="lighting" cache="true" mouseTransparent="true" radius="100.0" strokeType="INSIDE">
-               <fill>
-                  <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
-                     <stops>
-                        <Stop color="#ffffff40" />
-                        <Stop color="#ffffff00" offset="1.0" />
-                     </stops>
-                  </RadialGradient>
-               </fill></Circle>
+                    <fill>
+                        <RadialGradient centerX="0.5" centerY="0.5" radius="0.5">
+                            <stops>
+                                <Stop color="#ffffff40" />
+                                <Stop color="#ffffff00" offset="1.0" />
+                            </stops>
+                        </RadialGradient>
+                    </fill>
+                </Circle>
             </children>
             <clip>
                 <Rectangle fx:id="lightingClip" />

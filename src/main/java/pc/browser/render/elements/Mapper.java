@@ -5,6 +5,7 @@
  */
 package pc.browser.render.elements;
 
+import com.steadystate.css.dom.CSSRuleListImpl;
 import com.steadystate.css.dom.CSSStyleDeclarationImpl;
 import com.steadystate.css.dom.CSSStyleSheetImpl;
 import com.steadystate.css.parser.CSSOMParser;
@@ -88,8 +89,7 @@ public class Mapper {
                 try {
                     return new CSSOMParser(new SACParserCSS3()).parseStyleSheet(is, null, null).getCssRules();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
-                    throw new RuntimeException(ex);
+                    return new CSSRuleListImpl();
                 }
             }).forEach(rl -> {
                 for (int i = 0; i < rl.getLength(); i++) {
@@ -129,7 +129,7 @@ public class Mapper {
             });
         }
         if (node instanceof TextNode) {
-            Text t = new Text(((TextNode) node).text());
+            Text t = new Text(((TextNode) node).text().replace("&nbsp;", "\u00A0"));
             t.setUserData(node);
             try {
                 String color = styling.getPropertyValue("color");
@@ -142,21 +142,20 @@ public class Mapper {
             return new Pair<>(t, styling);
         } else if (node instanceof Element && getDisplayType(styling) != DisplayType.NONE) {
             ElementWrapper wrapper;
-            if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
-                wrapper = new ElementWrapper(InputElementMapper.map((Element) node));
-                wrapper.setStyling(styling);
-                return new Pair<>(wrapper, styling);
+            javafx.scene.Node n;
+            if (SpecialMapper.isSpecialMapped((Element) node)) {
+                n = SpecialMapper.map((Element) node, styling);
+            } else if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
+                n = InputElementMapper.map((Element) node);
             } else if (node.childNodeSize() > 0) {
-                wrapper = new ElementWrapper(DisplayMapper.map(node, styling, this::map));
-                wrapper.setStyling(styling);
-                return new Pair<>(wrapper, styling);
+                n = DisplayMapper.map(node, styling, this::map);
             } else {
-                Group g = new Group();
-                g.setUserData(node);
-                wrapper = new ElementWrapper(g);
-                wrapper.setStyling(styling);
-                return new Pair<>(wrapper, styling);
+                n = new Group();
+                n.setUserData(node);
             }
+            wrapper = new ElementWrapper(n);
+            wrapper.setStyling(styling);
+            return new Pair<>(wrapper, styling);
         } else {
             Group g = new Group();
             g.setUserData(node);

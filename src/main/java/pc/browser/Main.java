@@ -62,6 +62,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.w3c.css.sac.InputSource;
@@ -328,15 +329,18 @@ public class Main {
 
     private void load(URL url, String original) {
         TabController current = focusedTab.get();
-        current.getLoadingProperty().set(true);
         current.setEnteredText(null);
         current.setCurrent(url);
+        current.loadStateProperty().set(TabController.TabLoadState.CONNECTING);
         omnibar.setText(url.toExternalForm());
         async.submit(() -> {
             try {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
                 System.out.println(document.head().getElementsByTag("title"));
-                Platform.runLater(() -> current.setTitle(document.head().getElementsByTag("title").text()));
+                Platform.runLater(() -> {
+                    current.setTitle(document.head().getElementsByTag("title").text());
+                    current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
+                });
                 try {
                     Parent p = (Parent) new Mapper(new CSSOMParser(new SACParserCSS3())
                             .parseStyleSheet(new InputSource(new BufferedReader(
@@ -348,11 +352,17 @@ public class Main {
                             content.setContent(p);
                         }
                     });
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             } catch (IOException ex) {
+                if (ex instanceof HttpStatusException) {
+
+                }
+                ex.printStackTrace();
                 safety(original);
+            } finally {
+                Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
             }
         });
     }

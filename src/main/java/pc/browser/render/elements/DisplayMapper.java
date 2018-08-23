@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -25,7 +27,8 @@ import org.w3c.dom.css.CSSStyleDeclaration;
  */
 public class DisplayMapper {
 
-    public static javafx.scene.Node map(Node n, CSSStyleDeclaration styling, Function<Node, Pair<javafx.scene.Node, CSSStyleDeclaration>> childMapper) {
+    public static javafx.scene.Node map(Node n, CSSStyleDeclaration styling,
+            Function<Node, Pair<javafx.scene.Node, CSSStyleDeclaration>> childMapper) {
         switch (InternalDisplayType.toInternal(getDisplayType(styling))) {
             case FLEX_HOR:
                 HBox hContainer = new HBox();
@@ -91,6 +94,37 @@ public class DisplayMapper {
                 return table;
         }
     }
+    
+//    private static javafx.scene.Node mapTable(Node n, CSSStyleDeclaration styling) {
+//        GridPane layout = new GridPane();
+//        for (int i = 0; i < n.childNodeSize(); i++) {
+//            
+//        }
+//    }
+
+    private static StackPane getVAlignWrapper(CSSStyleDeclaration styling) {
+        StackPane s = new StackPane();
+        VerticalAlign va = VerticalAlign.getVA(styling.getPropertyValue("vertical-align"));
+        switch (va) {
+            case BOTTOM:
+                s.setAlignment(Pos.BOTTOM_LEFT);
+                break;
+            case MIDDLE:
+                s.setAlignment(Pos.CENTER_LEFT);
+                break;
+            case TOP:
+                s.setAlignment(Pos.TOP_LEFT);
+                break;
+            case SUP:
+                s.setPadding(new Insets(5, 0, 0, 0));
+                s.setAlignment(Pos.TOP_LEFT);
+                break;
+            case SUB:
+                s.setPadding(new Insets(0, 0, 5, 0));
+                s.setAlignment(Pos.CENTER);
+        }
+        return s;
+    }
 
     private static enum InternalDisplayType {
         TABLE, FLEX_HOR, FLEX_HOR_WRAP, FLEX_VER, FLEX_VER_WRAP, STANDARD;
@@ -126,4 +160,29 @@ public class DisplayMapper {
         }
         return n instanceof Parent ? ((Parent) n).getChildrenUnmodifiable() : Arrays.asList(n);
     }
+
+    private static enum VerticalAlign {
+        TOP, MIDDLE, BOTTOM, SUP, SUB, UNSUPPORTED;
+
+        public static VerticalAlign getVA(String value) {
+            switch (value.toLowerCase()) {
+                case "top":
+                    return TOP;
+                case "middle":
+                    return MIDDLE;
+                case "bottom":
+                    return BOTTOM;
+                case "sub":
+                    return SUB;
+                case "sup":
+                    return SUP;
+                default:
+                    return UNSUPPORTED;
+            }
+        }
+    }
+
+//    private static List<Text> splitText(Text t) {
+//        t.getText().split("\\s");
+//    }
 }

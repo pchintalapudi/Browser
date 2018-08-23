@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -52,10 +50,21 @@ public class TabController extends AnchorPane {
             if (s == null) {
                 tabContent.getChildren().remove(icon);
             } else {
-                tabContent.getChildren().add(icon);
+                tabContent.getChildren().add(0, icon);
             }
         });
         tabContent.getChildren().remove(icon);
+        loadStateProperty.addListener((o, b, s) -> {
+            switch (s) {
+                case IDLE:
+                    if (icon.getImage() != null) {
+                        tabContent.getChildren().add(0, icon);
+                    }
+                    break;
+                case CONNECTING:
+                    
+            }
+        });
     }
 
     @FXML
@@ -102,8 +111,8 @@ public class TabController extends AnchorPane {
 
     private URL current;
     private String enteredText;
-    private ObjectProperty<Parent> sceneGraphProperty = new SimpleObjectProperty<>(Resources.directLoad("NullPage.fxml"));
-    private final BooleanProperty loadingProperty = new SimpleBooleanProperty();
+    private final ObjectProperty<Parent> sceneGraphProperty = new SimpleObjectProperty<>(Resources.directLoad("NullPage.fxml"));
+    private final ObjectProperty<TabLoadState> loadStateProperty = new SimpleObjectProperty<>(TabLoadState.IDLE);
     private final TabLog log = new TabLog();
 
     /**
@@ -138,11 +147,8 @@ public class TabController extends AnchorPane {
         return sceneGraphProperty;
     }
 
-    /**
-     * @return the loadingProperty
-     */
-    public BooleanProperty getLoadingProperty() {
-        return loadingProperty;
+    public ObjectProperty<TabLoadState> loadStateProperty() {
+        return loadStateProperty;
     }
 
     /**
@@ -150,5 +156,9 @@ public class TabController extends AnchorPane {
      */
     public TabLog getLog() {
         return log;
+    }
+
+    public enum TabLoadState {
+        CONNECTING, RENDERING, IDLE;
     }
 }
