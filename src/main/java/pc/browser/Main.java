@@ -5,12 +5,8 @@
  */
 package pc.browser;
 
-import com.steadystate.css.parser.CSSOMParser;
-import com.steadystate.css.parser.SACParserCSS3;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
@@ -65,10 +61,8 @@ import javafx.util.Duration;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.w3c.css.sac.InputSource;
 import pc.browser.debug.SceneGraphAnalyzer;
 import pc.browser.render.elements.Mapper;
-import pc.browser.resources.Resources;
 
 /**
  *
@@ -347,15 +341,18 @@ public class Main {
                     if (current == focusedTab.get()) {
                         content.setContent(p);
                     }
+                    System.out.println("Done");
                 });
             } catch (IOException ex) {
                 if (ex instanceof HttpStatusException) {
-
                 }
                 ex.printStackTrace();
                 safety(original);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             } finally {
                 Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
+                System.out.println("End");
             }
         });
     }

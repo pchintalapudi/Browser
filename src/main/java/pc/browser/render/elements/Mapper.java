@@ -48,14 +48,13 @@ public class Mapper {
             });
             styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
                     new StringReader(document.getElementsByTag("style").text())), null, null));
-            javafx.scene.Node n = map(document.body()).getKey();
-            return n;
+            return map(document.body());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private Pair<javafx.scene.Node, CSSStyleDeclaration> map(Node node) {
+    private javafx.scene.Node map(Node node) {
         CSSStyleDeclaration styling = styler.style(node);
         if (node.hasAttr("style")) {
             CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
@@ -82,27 +81,27 @@ public class Mapper {
             Pair<Font, Boolean> p = Styler.getFont(styling);
             t.setFont(p.getKey());
             t.setUnderline(p.getValue());
-            return new Pair<>(t, styling);
+            return t;
         } else if (node instanceof Element && Styler.getDisplayType(styling) != DisplayType.NONE) {
             ElementWrapper wrapper;
             javafx.scene.Node n;
             if (SpecialMapper.isSpecialMapped((Element) node)) {
-                n = SpecialMapper.map((Element) node, styling);
+                n = SpecialMapper.map((Element) node);
             } else if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
                 n = InputElementMapper.map((Element) node);
             } else if (node.childNodeSize() > 0) {
-                n = DisplayMapper.map(node, styling, this::map);
+                n = DisplayMapper.map(node, styler, this::map);
             } else {
                 n = new Group();
                 n.setUserData(node);
             }
             wrapper = new ElementWrapper(n);
             wrapper.setStyling(styling);
-            return new Pair<>(wrapper, styling);
+            return wrapper;
         } else {
             Group g = new Group();
             g.setUserData(node);
-            return new Pair<>(g, styling);
+            return g;
         }
     }
 

@@ -26,7 +26,7 @@ import org.w3c.dom.css.CSSStyleDeclaration;
  */
 public class SpecialMapper {
 
-    public static javafx.scene.Node map(Element element, CSSStyleDeclaration styling) {
+    public static javafx.scene.Node map(Element element) {
         javafx.scene.Node node;
         switch (element.tagName()) {
             case "img":

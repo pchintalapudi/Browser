@@ -5,21 +5,19 @@
  */
 package pc.browser.render.elements;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Pair;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import pc.browser.render.styles.Styler;
 
 /**
  *
@@ -27,80 +25,88 @@ import org.w3c.dom.css.CSSStyleDeclaration;
  */
 public class DisplayMapper {
 
-    public static javafx.scene.Node map(Node n, CSSStyleDeclaration styling,
-            Function<Node, Pair<javafx.scene.Node, CSSStyleDeclaration>> childMapper) {
-        switch (InternalDisplayType.toInternal(getDisplayType(styling))) {
+    public static javafx.scene.Node map(Node n, Styler styler,
+            Function<Node, javafx.scene.Node> childMapper) {
+        CSSStyleDeclaration styling = styler.style(n);
+        List<CSSStyleDeclaration> childStyles = n.childNodes().stream().map(styler::style).collect(Collectors.toList());
+        switch (InternalDisplayType.toInternal(Styler.getDisplayType(styling))) {
             case FLEX_HOR:
                 HBox hContainer = new HBox();
-                n.childNodes().stream().map(childMapper).filter(p -> getDisplayType(p.getValue()) != DisplayType.NONE)
-                        .map(Pair::getKey).forEach(hContainer.getChildren()::add);
+                for (int i = 0; i < childStyles.size(); i++) {
+                    if (Styler.getDisplayType(childStyles.get(i)) != DisplayType.NONE) {
+                        hContainer.getChildren().add(childMapper.apply(n.childNode(i)));
+                    }
+                }
                 hContainer.setUserData(n);
                 return hContainer;
-            case STANDARD:
-            default:
-                VBox vContainer = new VBox();
-                List<Pair<javafx.scene.Node, CSSStyleDeclaration>> mappedList
-                        = n.childNodes().stream().map(childMapper).collect(Collectors.toList());
-                if (mappedList.size() > 0) {
-                    HBox prev = new HBox(mappedList.get(0).getKey());
-                    for (int i = 1; i < mappedList.size(); i++) {
-                        if (n.childNode(i) instanceof TextNode || DisplayType.isInline(getDisplayType(mappedList.get(i).getValue()))) {
-                            prev.getChildren().add(mappedList.get(i).getKey());
-                        } else if (getDisplayType(mappedList.get(i).getValue()) != DisplayType.NONE) {
-                            if (prev.getChildren().size() > 1) {
-                                vContainer.getChildren().add(prev);
-                            } else {
-                                vContainer.getChildren().add(prev.getChildren().remove(0));
-                            }
-                            prev = new HBox(mappedList.get(i).getKey());
-                        }
-                    }
-                    if (prev.getChildren().size() > 1) {
-                        vContainer.getChildren().add(prev);
-                    } else {
-                        vContainer.getChildren().add(prev.getChildren().remove(0));
-                    }
-                }
-                if (vContainer.getChildren().size() > 1) {
-                    vContainer.setUserData(n);
-                    return vContainer;
-                } else {
-                    javafx.scene.Node node = vContainer.getChildren().remove(0);
-                    node.setUserData(n);
-                    return node;
-                }
             case FLEX_VER:
-                vContainer = new VBox();
-                n.childNodes().stream().map(childMapper).filter(p -> getDisplayType(p.getValue()) != DisplayType.NONE)
-                        .map(Pair::getKey).forEach(vContainer.getChildren()::add);
+                VBox vContainer = new VBox();
+                for (int i = 0; i < childStyles.size(); i++) {
+                    if (Styler.getDisplayType(childStyles.get(i)) != DisplayType.NONE) {
+                        vContainer.getChildren().add(childMapper.apply(n.childNode(i)));
+                    }
+                }
                 vContainer.setUserData(n);
                 return vContainer;
             case TABLE:
-                GridPane table = new GridPane();
-                for (int i = 0; i < n.childNodeSize(); i++) {
-                    Pair<javafx.scene.Node, CSSStyleDeclaration> mapped = childMapper.apply(n.childNode(i));
-                    if (getDisplayType(mapped.getValue()) != DisplayType.NONE) {
-                        if (mapped.getKey() instanceof Parent) {
-                            List<javafx.scene.Node> grandchildren = fetchRealChildren(mapped.getKey());
-                            for (int j = 0; j < grandchildren.size(); j++) {
-                                table.add(grandchildren.get(j), j, i);
+                return mapTable(n, styling, childStyles, childMapper);
+            default:
+            case STANDARD:
+                VBox standard = new VBox();
+                if (childStyles.size() > 0) {
+                    HBox prev = new HBox(childMapper.apply(n.childNode(0)));
+                    for (int i = 1; i < childStyles.size(); i++) {
+                        if (n.childNode(i) instanceof TextNode || DisplayType.isInline(Styler.getDisplayType(childStyles.get(i)))) {
+                            prev.getChildren().add(childMapper.apply(n.childNode(i)));
+                        } else if (Styler.getDisplayType(childStyles.get(i)) != DisplayType.NONE) {
+                            if (prev.getChildren().size() > 1) {
+                                standard.getChildren().add(prev);
+                            } else {
+                                standard.getChildren().add(prev.getChildren().remove(0));
                             }
-                        } else {
-                            table.add(mapped.getKey(), 0, i);
+                            prev = new HBox(childMapper.apply(n.childNode(i)));
                         }
                     }
+                    if (prev.getChildren().size() > 1) {
+                        standard.getChildren().add(prev);
+                    } else {
+                        standard.getChildren().add(prev.getChildren().remove(0));
+                    }
                 }
-                table.setUserData(n);
-                return table;
+                if (standard.getChildren().size() > 1) {
+                    standard.setUserData(n);
+                    return standard;
+                } else {
+                    javafx.scene.Node node = standard.getChildren().remove(0);
+                    node.setUserData(n);
+                    return node;
+                }
+            
         }
     }
-    
-//    private static javafx.scene.Node mapTable(Node n, CSSStyleDeclaration styling) {
-//        GridPane layout = new GridPane();
-//        for (int i = 0; i < n.childNodeSize(); i++) {
-//            
-//        }
-//    }
+
+    private static class TableData extends HBox {
+    }
+
+    private static javafx.scene.Node mapTable(Node n, CSSStyleDeclaration styling,
+            List<CSSStyleDeclaration> childStyles, Function<Node, javafx.scene.Node> childMapper) {
+        VBox global = new VBox();
+        GridPane layout = new GridPane();
+        global.getChildren().add(layout);
+        for (int i = 0; i < childStyles.size(); i++) {
+            switch (Styler.getDisplayType(childStyles.get(i))) {
+                case TABLE_COLUMN_GROUP:
+                case TABLE_COLUMN:
+                case NONE:
+                    continue;
+                case TABLE_CAPTION:
+                    global.getChildren().add(childMapper.apply(n));
+                    break;
+                    
+            }
+        }
+        return global;
+    }
 
     private static StackPane getVAlignWrapper(CSSStyleDeclaration styling) {
         StackPane s = new StackPane();
@@ -141,24 +147,6 @@ public class DisplayMapper {
                     return STANDARD;
             }
         }
-    }
-
-    private static DisplayType getDisplayType(CSSStyleDeclaration styling) {
-        try {
-            DisplayType dt = DisplayType.read(styling.getPropertyValue("display").isEmpty() ? "inline-block"
-                    : styling.getPropertyValue("display"));
-            return dt;
-        } catch (IllegalArgumentException ex) {
-            return DisplayType.BLOCK;
-        }
-    }
-
-    private static List<javafx.scene.Node> fetchRealChildren(javafx.scene.Node n) {
-        while (n instanceof Parent && ((Parent) n).getChildrenUnmodifiable().size() == 1
-                && ((Parent) n).getChildrenUnmodifiable().get(0) instanceof StackPane) {
-            n = ((Parent) n).getChildrenUnmodifiable().get(0);
-        }
-        return n instanceof Parent ? ((Parent) n).getChildrenUnmodifiable() : Arrays.asList(n);
     }
 
     private static enum VerticalAlign {

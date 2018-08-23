@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -42,6 +44,7 @@ import pc.browser.resources.Resources;
 public final class Styler {
 
     private final List<CSSStyleRule> rules = new ArrayList<>();
+    private final Map<Node, CSSStyleDeclaration> cache = new WeakHashMap<>();
 
     public Styler() {
         try {
@@ -81,19 +84,41 @@ public final class Styler {
     }
 
     public CSSStyleDeclaration style(Node domNode) {
-        Element styler = domNode instanceof Element ? (Element) domNode
-                : domNode instanceof TextNode ? (Element) domNode.parent() : null;
-        return styler == null ? new CSSStyleDeclarationImpl() : rules.stream().filter(r
-                -> Arrays.stream(r.getSelectorText().trim().split(",\\s*"))
-                        .filter(s -> !s.contains(":")).anyMatch(styler::is))
-                .map(CSSStyleRule::getStyle)
-                .reduce(new CSSStyleDeclarationImpl(),
-                        (d1, d2) -> {
-                            for (int i = 0; i < d2.getLength(); i++) {
-                                d1.setProperty(d2.item(i), d2.getPropertyValue(d2.item(i)), d2.getPropertyPriority(d2.item(i)));
-                            }
-                            return d1;
-                        });
+        return cache.computeIfAbsent(domNode, n -> {
+            Element styler = n instanceof Element ? (Element) n : null;
+            CSSStyleDeclaration selfStyle = styler == null ? new CSSStyleDeclarationImpl() : rules.stream().filter(r
+                    -> Arrays.stream(r.getSelectorText().trim().split(",\\s*"))
+                            .filter(s -> !s.contains(":")).anyMatch(styler::is))
+                    .map(CSSStyleRule::getStyle)
+                    .reduce(new CSSStyleDeclarationImpl(),
+                            (d1, d2) -> {
+                                for (int i = 0; i < d2.getLength(); i++) {
+                                    d1.setProperty(d2.item(i), d2.getPropertyValue(d2.item(i)), d2.getPropertyPriority(d2.item(i)));
+                                }
+                                return d1;
+                            });
+            if (n.parent() != null) {
+                CSSStyleDeclaration parent = cache.get(n);
+                CSSStyleDeclaration realStyle = new CSSStyleDeclarationImpl();
+                for (int i = 0; i < selfStyle.getLength(); i++) {
+                    if (selfStyle.getPropertyValue(selfStyle.item(i)).trim().equalsIgnoreCase("inherit") && parent != null) {
+                        realStyle.setProperty(selfStyle.item(i),
+                                parent.getPropertyValue(selfStyle.item(i)),
+                                parent.getPropertyPriority(selfStyle.item(i)));
+                    } else {
+                        realStyle.setProperty(selfStyle.item(i),
+                                selfStyle.getPropertyValue(selfStyle.item(i)),
+                                selfStyle.getPropertyPriority(selfStyle.item(i)));
+                    }
+                }
+                return realStyle;
+            }
+            return selfStyle;
+        });
+    }
+
+    public CSSStyleDeclaration parentStyle(Node domNode) {
+        return cache.getOrDefault(domNode, new CSSStyleDeclarationImpl());
     }
 
     public static DisplayType getDisplayType(CSSStyleDeclaration styling) {
@@ -140,7 +165,9 @@ public final class Styler {
         return new Pair<>(Font.font(fontFamily, fontWeight, posture, fontSize), !notUnderline);
     }
 
-    private static final Pattern lengthPattern = Pattern.compile("(\\d+(?:\\.(?:\\d+)?)?)(cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|\\%)?");
+    private static final Pattern lengthPattern
+            = Pattern.compile("(\\d+(?:\\.(?:\\d+)?)?)(cm|mm|in|px|pt|pc|"
+                    + "em|ex|ch|rem|vw|vh|vmin|vmax|\\%)?");
 
     private static double toPixels(String value) {
         Matcher matcher = lengthPattern.matcher(value);
