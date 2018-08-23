@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,6 +85,8 @@ public final class Styler {
         }
     }
 
+    private static final Set<CSSInheritedProperties> AUTO_INHERIT = EnumSet.allOf(CSSInheritedProperties.class);
+
     public CSSStyleDeclaration style(Node domNode) {
         return cache.computeIfAbsent(domNode, n -> {
             Element styler = n instanceof Element ? (Element) n : null;
@@ -98,10 +102,13 @@ public final class Styler {
                                 return d1;
                             });
             if (n.parent() != null) {
-                CSSStyleDeclaration parent = cache.get(n);
+                CSSStyleDeclaration parent = style(n.parent());
                 CSSStyleDeclaration realStyle = new CSSStyleDeclarationImpl();
+                AUTO_INHERIT.forEach(p -> realStyle.setProperty(p.toCSSProperty(),
+                        parent.getPropertyValue(p.toCSSProperty()),
+                        parent.getPropertyPriority(p.toCSSProperty())));
                 for (int i = 0; i < selfStyle.getLength(); i++) {
-                    if (selfStyle.getPropertyValue(selfStyle.item(i)).trim().equalsIgnoreCase("inherit") && parent != null) {
+                    if (selfStyle.getPropertyValue(selfStyle.item(i)).trim().equalsIgnoreCase("inherit")) {
                         realStyle.setProperty(selfStyle.item(i),
                                 parent.getPropertyValue(selfStyle.item(i)),
                                 parent.getPropertyPriority(selfStyle.item(i)));

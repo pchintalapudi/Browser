@@ -30,8 +30,12 @@ public class SpecialMapper {
         javafx.scene.Node node;
         switch (element.tagName()) {
             case "img":
-                Image i = new Image(element.absUrl("src"), true);
-                node = new ImageView(i);
+                try {
+                    Image i = new Image(element.absUrl("src"), true);
+                    node = new ImageView(i);
+                } catch (IllegalArgumentException ex) {
+                    node = new Group();
+                }
                 break;
             case "iframe":
                 StackPane s = new StackPane();
@@ -42,6 +46,7 @@ public class SpecialMapper {
                         Platform.runLater(() -> s.getChildren().add(n));
                     } catch (IOException ex) {
                         Logger.getLogger(SpecialMapper.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException ex) {
                     }
                 }).start();
                 node = s;

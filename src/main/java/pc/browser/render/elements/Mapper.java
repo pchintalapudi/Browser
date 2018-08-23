@@ -5,7 +5,6 @@
  */
 package pc.browser.render.elements;
 
-import com.steadystate.css.dom.CSSRuleListImpl;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 import java.io.IOException;
@@ -23,9 +22,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.w3c.css.sac.InputSource;
-import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleDeclaration;
-import org.w3c.dom.css.CSSStyleRule;
 import pc.browser.render.styles.Styler;
 
 /**
@@ -73,10 +70,11 @@ public class Mapper {
         if (node instanceof TextNode) {
             Text t = new Text(((TextNode) node).text().replace("&nbsp;", "\u00A0"));
             t.setUserData(node);
+            String color = styling.getPropertyValue("color");
             try {
-                String color = styling.getPropertyValue("color");
                 t.setFill(color.isEmpty() ? Color.BLACK : Color.web(color));
             } catch (IllegalArgumentException ex) {
+                System.out.println("Failed color: " + color);
             }
             Pair<Font, Boolean> p = Styler.getFont(styling);
             t.setFont(p.getKey());
