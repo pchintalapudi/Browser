@@ -16,9 +16,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.transform.Rotate;
 import pc.browser.resources.Resources;
 
 /**
@@ -36,6 +38,10 @@ public class TabController extends AnchorPane {
     private ImageView icon;
     @FXML
     private Label tabTitle;
+    @FXML
+    private ProgressIndicator progressIndicator;
+
+    private final Rotate progressIndicatorFlip = new Rotate(180, 10, 10, 0, Rotate.Y_AXIS);
 
     public TabController() {
         FXMLLoader loader = Resources.getFXMLLoader("Tab.fxml");
@@ -48,21 +54,42 @@ public class TabController extends AnchorPane {
         }
         icon.imageProperty().addListener((o, b, s) -> {
             if (s == null) {
-                tabContent.getChildren().remove(icon);
+                getTabContent().getChildren().remove(icon);
             } else {
-                tabContent.getChildren().add(0, icon);
+                getTabContent().getChildren().add(0, icon);
             }
         });
-        tabContent.getChildren().remove(icon);
+        getTabContent().getChildren().remove(icon);
+        getTabContent().getChildren().remove(progressIndicator);
         loadStateProperty.addListener((o, b, s) -> {
-            switch (s) {
-                case IDLE:
-                    if (icon.getImage() != null) {
-                        tabContent.getChildren().add(0, icon);
-                    }
-                    break;
-                case CONNECTING:
-                    
+            try {
+                switch (s) {
+                    case IDLE:
+                        System.out.println("idled");
+                        getTabContent().getChildren().remove(progressIndicator);
+                        progressIndicator.getTransforms().remove(progressIndicatorFlip);
+                        if (icon.getImage() != null) {
+                            getTabContent().getChildren().add(0, icon);
+                        }
+                        break;
+                    case CONNECTING:
+                        System.out.println("connecting");
+                        progressIndicator.getTransforms().remove(progressIndicatorFlip);
+                        if (b == TabLoadState.IDLE) {
+                            getTabContent().getChildren().remove(icon);
+                            getTabContent().getChildren().add(0, progressIndicator);
+                        }
+                        break;
+                    case RENDERING:
+                        System.out.println("rendering");
+                        progressIndicator.getTransforms().add(progressIndicatorFlip);
+                        if (b == TabLoadState.IDLE) {
+                            getTabContent().getChildren().remove(icon);
+                            getTabContent().getChildren().add(0, progressIndicator);
+                        }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         });
     }
@@ -160,5 +187,12 @@ public class TabController extends AnchorPane {
 
     public enum TabLoadState {
         CONNECTING, RENDERING, IDLE;
+    }
+
+    /**
+     * @return the tabContent
+     */
+    private HBox getTabContent() {
+        return tabContent;
     }
 }

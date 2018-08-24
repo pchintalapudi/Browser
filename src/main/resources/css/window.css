@@ -123,6 +123,10 @@ and open the template in the editor.
     -fx-background-color:main-transp-dvis;
 }
 
+.non-content .progress-indicator {
+    -fx-accent: lime;
+}
+
 /*
 
 Window resize classes

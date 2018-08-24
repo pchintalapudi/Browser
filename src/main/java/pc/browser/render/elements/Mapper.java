@@ -10,8 +10,6 @@ import com.steadystate.css.parser.SACParserCSS3;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -40,7 +38,6 @@ public class Mapper {
                 try {
                     styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(is, null, null));
                 } catch (IOException ex) {
-                    Logger.getLogger(Mapper.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
             styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(

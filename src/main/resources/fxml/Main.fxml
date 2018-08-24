@@ -14,6 +14,7 @@
 <?import javafx.scene.paint.Stop?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane id="AnchorPane" fx:id="root" onMouseClicked="#requestFocus" prefHeight="900.0" prefWidth="1600.0" style="-fx-background-color: transparent;" stylesheets="@../css/window.css" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.Main">
     <children>
@@ -88,7 +89,16 @@
                                                     <children>
                                                         <Button fx:id="backButton" mnemonicParsing="false" onAction="#back" text="🡨" />
                                                         <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#forward" text="🡪" />
-                                                        <Button fx:id="reloadButton" mnemonicParsing="false" onAction="#reload" text="↻" />
+                                          <StackPane>
+                                             <children>
+                                                              <Button fx:id="reloadButton" maxWidth="22.0" mnemonicParsing="false" onAction="#reload" prefWidth="22.0" />
+                                                <Label fx:id="reloadButtonText" mouseTransparent="true" text="↻">
+                                                   <font>
+                                                      <Font size="18.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </StackPane>
                                                         <TextField id="omnibar" fx:id="omnibar" onAction="#load" HBox.hgrow="ALWAYS" />
                                                     </children>
                                                 </HBox>

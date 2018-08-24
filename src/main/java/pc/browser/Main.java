@@ -35,6 +35,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -58,6 +59,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.fxmisc.easybind.EasyBind;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -86,6 +88,10 @@ public class Main {
     private Circle lighting;
     @FXML
     private Rectangle lightingClip;
+    @FXML
+    private Button backButton, forwardButton, reloadButton;
+    @FXML
+    private Label reloadButtonText;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -148,6 +154,10 @@ public class Main {
         lightingClip.widthProperty().bind(header.widthProperty());
         lightingClip.heightProperty().bind(header.heightProperty());
         root.addEventFilter(MouseEvent.MOUSE_MOVED, this::trackLighting);
+        reloadButtonText.textProperty().bind(EasyBind.select(focusedTab)
+                .selectObject(TabController::loadStateProperty)
+                .map(TabController.TabLoadState.IDLE::equals)
+                .map(b -> b ? "↻" : "×"));
     }
 
     @FXML
