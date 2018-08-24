@@ -41,11 +41,8 @@ public class ElementWrapper extends StackPane {
     private final InnerWrapper inner;
     private final ObjectProperty<CSSStyleDeclaration> stylingProperty = new SimpleObjectProperty<>(new CSSStyleDeclarationImpl());
 
-    public ElementWrapper(Node n) {
-        super();
-        setUserData(n.getUserData());
-        n.setUserData(null);
-        super.getChildren().add(inner = new InnerWrapper(n));
+    public ElementWrapper() {
+        super.getChildren().add(inner = new InnerWrapper());
         super.setAlignment(Pos.TOP_LEFT);
         inner.setAlignment(Pos.TOP_LEFT);
         inner.backgroundProperty().bind(Bindings.createObjectBinding(() -> getCSSBackground(), stylingProperty));
@@ -208,5 +205,11 @@ public class ElementWrapper extends StackPane {
             System.out.println(stylingProperty.get().getCssText());
             return Background.EMPTY;
         }
+    }
+    
+    public void setElement(Node n) {
+        setUserData(n.getUserData());
+        n.setUserData(null);
+        inner.getChildren().add(n);
     }
 }

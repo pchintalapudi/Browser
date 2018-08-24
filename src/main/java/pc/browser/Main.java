@@ -95,11 +95,6 @@ public class Main {
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
-    private final ExecutorService async = Executors.newCachedThreadPool(r -> {
-        Thread t = new Thread(r);
-        t.setDaemon(true);
-        return t;
-    });
 
     private final ContextMenu windowMenu = new ContextMenu(), pageMenu = new ContextMenu();
 
@@ -337,32 +332,29 @@ public class Main {
         current.setCurrent(url);
         current.loadStateProperty().set(TabController.TabLoadState.CONNECTING);
         omnibar.setText(url.toExternalForm());
-        async.submit(() -> {
+        Async.async(() -> {
             try {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
-                System.out.println(document.head().getElementsByTag("title"));
                 Platform.runLater(() -> {
                     current.setTitle(document.head().getElementsByTag("title").text());
                     current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
                 });
-                Parent p = (Parent) new Mapper().map(document);
-                Platform.runLater(() -> {
-                    current.sceneGraphProperty().set(p);
-                    if (current == focusedTab.get()) {
-                        content.setContent(p);
-                    }
-                    System.out.println("Done");
+                Async.async(() -> {
+                    Parent p = (Parent) new Mapper().map(document);
+                    Platform.runLater(() -> {
+                        current.sceneGraphProperty().set(p);
+                        if (current == focusedTab.get()) {
+                            content.setContent(p);
+                        }
+                    });
                 });
             } catch (IOException ex) {
                 if (ex instanceof HttpStatusException) {
                 }
                 ex.printStackTrace();
                 safety(original);
-            } catch (Exception ex) {
-                ex.printStackTrace();
             } finally {
                 Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
-                System.out.println("End");
             }
         });
     }

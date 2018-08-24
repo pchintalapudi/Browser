@@ -41,7 +41,6 @@ public class TabController extends AnchorPane {
     @FXML
     private ProgressIndicator progressIndicator;
 
-    private final Rotate progressIndicatorFlip = new Rotate(180, 10, 10, 0, Rotate.Y_AXIS);
 
     public TabController() {
         FXMLLoader loader = Resources.getFXMLLoader("Tab.fxml");
@@ -65,24 +64,18 @@ public class TabController extends AnchorPane {
             try {
                 switch (s) {
                     case IDLE:
-                        System.out.println("idled");
                         getTabContent().getChildren().remove(progressIndicator);
-                        progressIndicator.getTransforms().remove(progressIndicatorFlip);
                         if (icon.getImage() != null) {
                             getTabContent().getChildren().add(0, icon);
                         }
                         break;
                     case CONNECTING:
-                        System.out.println("connecting");
-                        progressIndicator.getTransforms().remove(progressIndicatorFlip);
                         if (b == TabLoadState.IDLE) {
                             getTabContent().getChildren().remove(icon);
                             getTabContent().getChildren().add(0, progressIndicator);
                         }
                         break;
                     case RENDERING:
-                        System.out.println("rendering");
-                        progressIndicator.getTransforms().add(progressIndicatorFlip);
                         if (b == TabLoadState.IDLE) {
                             getTabContent().getChildren().remove(icon);
                             getTabContent().getChildren().add(0, progressIndicator);

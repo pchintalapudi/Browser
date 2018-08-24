@@ -19,6 +19,7 @@ import javafx.scene.layout.StackPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import pc.browser.Async;
 
 /**
  *
@@ -40,7 +41,7 @@ public class SpecialMapper {
             case "iframe":
                 StackPane s = new StackPane();
                 s.setAlignment(Pos.TOP_LEFT);
-                new Thread(() -> {
+                Async.async(() -> {
                     try {
                         Node n = new Mapper().map(Jsoup.connect(element.absUrl("src")).get());
                         Platform.runLater(() -> s.getChildren().add(n));
@@ -48,7 +49,7 @@ public class SpecialMapper {
                         Logger.getLogger(SpecialMapper.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (IllegalArgumentException ex) {
                     }
-                }).start();
+                });
                 node = s;
                 break;
             case "progress":

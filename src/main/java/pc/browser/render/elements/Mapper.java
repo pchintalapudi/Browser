@@ -10,7 +10,10 @@ import com.steadystate.css.parser.SACParserCSS3;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import javafx.application.Platform;
 import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -21,6 +24,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import pc.browser.Async;
 import pc.browser.render.styles.Styler;
 
 /**
@@ -31,21 +35,27 @@ public class Mapper {
 
     private final Styler styler = new Styler();
 
-    public javafx.scene.Node map(Document document) {
-        try {
-            document.getElementsByTag("link").stream().filter(Mapper::isStyleSheetLink)
-                    .map(e -> e.absUrl("href")).map(InputSource::new).forEach(is -> {
-                try {
-                    styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(is, null, null));
-                } catch (IOException ex) {
-                }
-            });
-            styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
-                    new StringReader(document.getElementsByTag("style").text())), null, null));
-            return map(document.body());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+    public Parent map(Document document) {
+        StackPane s = new StackPane();
+        Async.async(() -> {
+            try {
+                document.getElementsByTag("link").stream().filter(Mapper::isStyleSheetLink)
+                        .map(e -> e.absUrl("href")).map(InputSource::new).forEach(is -> {
+                    try {
+                        styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(is, null, null));
+                    } catch (IOException ex) {
+                    }
+                });
+                styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
+                        new StringReader(document.getElementsByTag("style").text())), null, null));
+                Platform.runLater(() -> s.getChildren().add(map(document.body())));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        return s;
     }
 
     private javafx.scene.Node map(Node node) {
@@ -66,32 +76,38 @@ public class Mapper {
         }
         if (node instanceof TextNode) {
             Text t = new Text(((TextNode) node).text().replace("&nbsp;", "\u00A0"));
-            t.setUserData(node);
-            String color = styling.getPropertyValue("color");
-            try {
-                t.setFill(color.isEmpty() ? Color.BLACK : Color.web(color));
-            } catch (IllegalArgumentException ex) {
-                System.out.println("Failed color: " + color);
-            }
-            Pair<Font, Boolean> p = Styler.getFont(styling);
-            t.setFont(p.getKey());
-            t.setUnderline(p.getValue());
+            Async.async(() -> {
+                t.setUserData(node);
+                String color = styling.getPropertyValue("color");
+                try {
+                    Platform.runLater(() -> t.setFill(color.isEmpty() ? Color.BLACK : Color.web(color)));
+                } catch (IllegalArgumentException ex) {
+                    System.out.println("Failed color: " + color);
+                }
+                Pair<Font, Boolean> p = Styler.getFont(styling);
+                Platform.runLater(() -> {
+                    t.setFont(p.getKey());
+                    t.setUnderline(p.getValue());
+                });
+            });
             return t;
         } else if (node instanceof Element && Styler.getDisplayType(styling) != DisplayType.NONE) {
-            ElementWrapper wrapper;
-            javafx.scene.Node n;
-            if (SpecialMapper.isSpecialMapped((Element) node)) {
-                n = SpecialMapper.map((Element) node);
-            } else if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
-                n = InputElementMapper.map((Element) node);
-            } else if (node.childNodeSize() > 0) {
-                n = DisplayMapper.map(node, styler, this::map);
-            } else {
-                n = new Group();
-                n.setUserData(node);
-            }
-            wrapper = new ElementWrapper(n);
-            wrapper.setStyling(styling);
+            ElementWrapper wrapper = new ElementWrapper();
+            Async.async(() -> wrapper.setStyling(styling));
+            Async.async(() -> {
+                javafx.scene.Node n;
+                if (SpecialMapper.isSpecialMapped((Element) node)) {
+                    n = SpecialMapper.map((Element) node);
+                } else if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
+                    n = InputElementMapper.map((Element) node);
+                } else if (node.childNodeSize() > 0) {
+                    n = DisplayMapper.map(node, styler, this::map);
+                } else {
+                    n = new Group();
+                    n.setUserData(node);
+                }
+                Platform.runLater(() -> wrapper.setElement(n));
+            });
             return wrapper;
         } else {
             Group g = new Group();
