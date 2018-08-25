@@ -20,6 +20,7 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import pc.browser.render.styles.CursorUtils;
 
 /**
  *
@@ -48,6 +49,7 @@ public class ElementWrapper extends StackPane {
         inner.backgroundProperty().bind(Bindings.createObjectBinding(() -> getCSSBackground(), stylingProperty));
         paddingProperty().bind(Bindings.createObjectBinding(this::getMargins, stylingProperty));
         inner.paddingProperty().bind(Bindings.createObjectBinding(this::getPaddings, stylingProperty));
+        inner.cursorProperty().bind(Bindings.createObjectBinding(() -> CursorUtils.translate(stylingProperty.get().getPropertyValue("cursor")), stylingProperty));
     }
 
     private Insets getMargins() {
@@ -206,7 +208,7 @@ public class ElementWrapper extends StackPane {
             return Background.EMPTY;
         }
     }
-    
+
     public void setElement(Node n) {
         setUserData(n.getUserData());
         n.setUserData(null);
