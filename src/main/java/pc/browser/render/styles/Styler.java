@@ -28,7 +28,6 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Pair;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSImportRule;
 import org.w3c.dom.css.CSSRule;

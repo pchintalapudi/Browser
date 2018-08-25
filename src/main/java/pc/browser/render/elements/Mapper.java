@@ -25,6 +25,7 @@ import org.jsoup.nodes.TextNode;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.Async;
+import pc.browser.async.RenderTask;
 import pc.browser.render.styles.Styler;
 
 /**
@@ -34,10 +35,15 @@ import pc.browser.render.styles.Styler;
 public class Mapper {
 
     private final Styler styler = new Styler();
+    private final int mapperPriority;
+
+    public Mapper(int mapperPriority) {
+        this.mapperPriority = mapperPriority;
+    }
 
     public Parent map(Document document) {
         StackPane s = new StackPane();
-        Async.async(() -> {
+        Async.asyncRender(() -> {
             try {
                 document.getElementsByTag("link").stream().filter(Mapper::isStyleSheetLink)
                         .map(e -> e.absUrl("href")).map(InputSource::new).forEach(is -> {
@@ -48,17 +54,18 @@ public class Mapper {
                 });
                 styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
                         new StringReader(document.getElementsByTag("style").text())), null, null));
-                Platform.runLater(() -> s.getChildren().add(map(document.body())));
+                Platform.runLater(() -> s.getChildren().add(map(document.body(), 0)));
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        });
+        }, RenderTask.START, mapperPriority);
         return s;
     }
 
-    private javafx.scene.Node map(Node node) {
+    private javafx.scene.Node map(Node node, int parentPriority) {
+        int priority = parentPriority + 1;
         CSSStyleDeclaration styling = styler.style(node);
         if (node.hasAttr("style")) {
             CSSOMParser parser = new CSSOMParser(new SACParserCSS3());
@@ -76,8 +83,8 @@ public class Mapper {
         }
         if (node instanceof TextNode) {
             Text t = new Text(((TextNode) node).text().replace("&nbsp;", "\u00A0"));
-            Async.async(() -> {
-                t.setUserData(node);
+            t.setUserData(node);
+            Async.asyncRender(() -> {
                 String color = styling.getPropertyValue("color");
                 try {
                     Platform.runLater(() -> t.setFill(color.isEmpty() ? Color.BLACK : Color.web(color)));
@@ -89,25 +96,25 @@ public class Mapper {
                     t.setFont(p.getKey());
                     t.setUnderline(p.getValue());
                 });
-            });
+            }, RenderTask.PAINT, priority);
             return t;
         } else if (node instanceof Element && Styler.getDisplayType(styling) != DisplayType.NONE) {
             ElementWrapper wrapper = new ElementWrapper();
-            Async.async(() -> wrapper.setStyling(styling));
-            Async.async(() -> {
+            Async.asyncRender(() -> wrapper.setStyling(styling), RenderTask.LAYOUT, priority);
+            Async.asyncRender(() -> {
                 javafx.scene.Node n;
                 if (SpecialMapper.isSpecialMapped((Element) node)) {
                     n = SpecialMapper.map((Element) node);
                 } else if (InputElementMapper.isInputMapped(((Element) node).tagName())) {
                     n = InputElementMapper.map((Element) node);
                 } else if (node.childNodeSize() > 0) {
-                    n = DisplayMapper.map(node, styler, this::map);
+                    n = DisplayMapper.map(node, styler, nde -> map(nde, priority));
                 } else {
                     n = new Group();
                     n.setUserData(node);
                 }
                 Platform.runLater(() -> wrapper.setElement(n));
-            });
+            }, RenderTask.LAYOUT, priority);
             return wrapper;
         } else {
             Group g = new Group();

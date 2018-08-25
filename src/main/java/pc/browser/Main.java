@@ -14,8 +14,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -332,15 +330,15 @@ public class Main {
         current.setCurrent(url);
         current.loadStateProperty().set(TabController.TabLoadState.CONNECTING);
         omnibar.setText(url.toExternalForm());
-        Async.async(() -> {
+        Async.asyncStandard(() -> {
             try {
                 Document document = Jsoup.connect(url.toExternalForm()).get();
                 Platform.runLater(() -> {
                     current.setTitle(document.head().getElementsByTag("title").text());
                     current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
                 });
-                Async.async(() -> {
-                    Parent p = (Parent) new Mapper().map(document);
+                Async.asyncStandard(() -> {
+                    Parent p = (Parent) new Mapper(0).map(document);
                     Platform.runLater(() -> {
                         current.sceneGraphProperty().set(p);
                         if (current == focusedTab.get()) {
