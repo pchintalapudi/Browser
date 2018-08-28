@@ -13,13 +13,13 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import pc.browser.Async;
 import pc.browser.async.RenderTask;
+import pc.browser.cache.ImageCache;
 
 /**
  *
@@ -31,10 +31,9 @@ public class SpecialMapper {
         javafx.scene.Node node;
         switch (element.tagName()) {
             case "img":
-                try {
-                    Image i = new Image(element.absUrl("src"), true);
-                    node = new ImageView(i);
-                } catch (IllegalArgumentException ex) {
+                if (!element.absUrl("src").isEmpty()) {
+                    node = new ImageView(ImageCache.getImageForUrl(element.absUrl("src")));
+                } else {
                     node = new Group();
                 }
                 break;

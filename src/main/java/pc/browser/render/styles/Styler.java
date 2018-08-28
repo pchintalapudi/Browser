@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.scene.Cursor;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -35,7 +36,6 @@ import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
-import pc.browser.render.elements.DisplayType;
 import pc.browser.resources.Resources;
 
 /**
@@ -43,6 +43,47 @@ import pc.browser.resources.Resources;
  * @author prem
  */
 public final class Styler {
+
+    public static Cursor translate(String cssValue) {
+        switch (cssValue.trim().toLowerCase()) {
+            case "default":
+            default:
+                return Cursor.DEFAULT;
+            case "pointer":
+                return Cursor.HAND;
+            case "none":
+                return Cursor.DISAPPEAR;
+            case "text":
+                return Cursor.TEXT;
+            case "progress":
+            case "wait":
+                return Cursor.WAIT;
+            case "grab":
+                return Cursor.HAND;
+            case "grabbing":
+                return Cursor.CLOSED_HAND;
+            case "move":
+                return Cursor.MOVE;
+            case "crosshair":
+                return Cursor.CROSSHAIR;
+            case "n-resize":
+                return Cursor.N_RESIZE;
+            case "w-resize":
+                return Cursor.W_RESIZE;
+            case "s-resize":
+                return Cursor.S_RESIZE;
+            case "e-resize":
+                return Cursor.E_RESIZE;
+            case "nw-resize":
+                return Cursor.NW_RESIZE;
+            case "ne-resize":
+                return Cursor.NE_RESIZE;
+            case "sw-resize":
+                return Cursor.SW_RESIZE;
+            case "se-resize":
+                return Cursor.SE_RESIZE;
+        }
+    }
 
     private final List<CSSStyleRule> rules = new ArrayList<>();
     private final Map<Node, CSSStyleDeclaration> cache = new WeakHashMap<>();
@@ -209,5 +250,13 @@ public final class Styler {
         } else {
             return 16;
         }
+    }
+    
+    static <E extends Enum<E>> String toString(E val) {
+        return val.name().toLowerCase().replace("_", "-");
+    }
+    
+    static <E extends Enum<E>> E toEnum(String str, Class<E> enumClass) {
+        return Enum.valueOf(enumClass, str.toUpperCase().replace("-", "_").trim());
     }
 }

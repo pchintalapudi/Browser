@@ -12,6 +12,7 @@ import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -346,11 +347,12 @@ public class Main {
                         }
                     });
                 });
+            } catch (UnknownHostException ex) {
+                search(original);
+            } catch (HttpStatusException ex) {
+                
             } catch (IOException ex) {
-                if (ex instanceof HttpStatusException) {
-                }
                 ex.printStackTrace();
-                safety(original);
             } finally {
                 Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
             }
@@ -384,7 +386,7 @@ public class Main {
         load(url, text);
     }
 
-    private void safety(String original) {
+    private void search(String original) {
         try {
             URL url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(original, "utf-8") + "&sourceid=browser&ie=UTF-8");
             load(url, original);

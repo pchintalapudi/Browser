@@ -5,6 +5,7 @@
  */
 package pc.browser.render.elements;
 
+import pc.browser.render.styles.DisplayType;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;

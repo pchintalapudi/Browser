@@ -17,10 +17,14 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import org.w3c.dom.css.CSSStyleDeclaration;
-import pc.browser.render.styles.CursorUtils;
+import pc.browser.cache.ImageCache;
+import pc.browser.render.styles.Styler;
 
 /**
  *
@@ -28,28 +32,40 @@ import pc.browser.render.styles.CursorUtils;
  */
 public class ElementWrapper extends StackPane {
 
-    private static class InnerWrapper extends StackPane {
+    private static class PaddingBox extends StackPane {
 
-        public InnerWrapper() {
+        public PaddingBox() {
         }
 
-        public InnerWrapper(Node... children) {
+        public PaddingBox(Node... children) {
             super(children);
         }
 
     }
 
-    private final InnerWrapper inner;
+    private static class ContentBox extends StackPane {
+
+        public ContentBox() {
+        }
+
+        public ContentBox(Node... children) {
+            super(children);
+        }
+
+    }
+
+    private final ContentBox contentBox;
+    private final PaddingBox paddingBox;
     private final ObjectProperty<CSSStyleDeclaration> stylingProperty = new SimpleObjectProperty<>(new CSSStyleDeclarationImpl());
 
     public ElementWrapper() {
-        super.getChildren().add(inner = new InnerWrapper());
+        super.getChildren().add(paddingBox = new PaddingBox(contentBox = new ContentBox()));
         super.setAlignment(Pos.TOP_LEFT);
-        inner.setAlignment(Pos.TOP_LEFT);
-        inner.backgroundProperty().bind(Bindings.createObjectBinding(() -> getCSSBackground(), stylingProperty));
+        paddingBox.setAlignment(Pos.TOP_LEFT);
+        paddingBox.backgroundProperty().bind(Bindings.createObjectBinding(() -> getCSSBackground(), stylingProperty));
         paddingProperty().bind(Bindings.createObjectBinding(this::getMargins, stylingProperty));
-        inner.paddingProperty().bind(Bindings.createObjectBinding(this::getPaddings, stylingProperty));
-        inner.cursorProperty().bind(Bindings.createObjectBinding(() -> CursorUtils.translate(stylingProperty.get().getPropertyValue("cursor")), stylingProperty));
+        paddingBox.paddingProperty().bind(Bindings.createObjectBinding(this::getPaddings, stylingProperty));
+        paddingBox.cursorProperty().bind(Bindings.createObjectBinding(() -> Styler.translate(stylingProperty.get().getPropertyValue("cursor")), stylingProperty));
     }
 
     private Insets getMargins() {
@@ -182,7 +198,6 @@ public class ElementWrapper extends StackPane {
                     }
                 }
             } catch (Exception ex) {
-                System.out.println(matcher);
                 return 0;
             }
         } else {
@@ -198,20 +213,32 @@ public class ElementWrapper extends StackPane {
     private Background getCSSBackground() {
         String bcolor = stylingProperty.get().getPropertyValue("background-color");
         if (bcolor.isEmpty()) {
-            bcolor = stylingProperty.get().getPropertyValue("background");
-        }
-        try {
-            return bcolor.isEmpty() ? Background.EMPTY : new Background(new BackgroundFill(Color.web(bcolor), null, null));
-        } catch (IllegalArgumentException ex) {
-            System.out.println("styling-block:");
-            System.out.println(stylingProperty.get().getCssText());
-            return Background.EMPTY;
+            bcolor = stylingProperty.get().getPropertyValue("background-image");
+            String rep = stylingProperty.get().getPropertyValue("background-repeat");
+            String pos = stylingProperty.get().getPropertyValue("background-position");
+            if (bcolor.isEmpty()) {
+                return Background.EMPTY;
+            } else if (getUserData() != null) {
+                String imgUrl = ((org.jsoup.nodes.Node) getUserData()).baseUri() + "/" + bcolor.replaceAll("url\\(([\\s\\S]*)\\)", "$1");
+                return new Background(new BackgroundImage(ImageCache.getImageForUrl(imgUrl),
+                        BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, null, BackgroundSize.DEFAULT));
+            } else {
+                return Background.EMPTY;
+            }
+        } else {
+            try {
+                return new Background(new BackgroundFill(Color.web(bcolor), null, null));
+            } catch (IllegalArgumentException ex) {
+                System.out.println("styling-block:");
+                System.out.println(stylingProperty.get().getCssText());
+                return Background.EMPTY;
+            }
         }
     }
 
     public void setElement(Node n) {
         setUserData(n.getUserData());
         n.setUserData(null);
-        inner.getChildren().add(n);
+        contentBox.getChildren().add(n);
     }
 }

@@ -5,6 +5,7 @@
  */
 package pc.browser.render.elements;
 
+import pc.browser.render.styles.DisplayType;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 import java.io.IOException;
