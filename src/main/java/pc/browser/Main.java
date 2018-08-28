@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -64,6 +65,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import pc.browser.debug.SceneGraphAnalyzer;
 import pc.browser.render.elements.Mapper;
+import pc.browser.resources.Resources;
 
 /**
  *
@@ -326,36 +328,46 @@ public class Main {
     }
 
     private void load(URL url, String original) {
-        TabController current = focusedTab.get();
-        current.setEnteredText(null);
-        current.setCurrent(url);
-        current.loadStateProperty().set(TabController.TabLoadState.CONNECTING);
-        omnibar.setText(url.toExternalForm());
-        Async.asyncStandard(() -> {
-            try {
-                Document document = Jsoup.connect(url.toExternalForm()).get();
-                Platform.runLater(() -> {
-                    current.setTitle(document.head().getElementsByTag("title").text());
-                    current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
-                });
-                Async.asyncStandard(() -> {
-                    Parent p = (Parent) new Mapper(0).map(document);
+        Platform.runLater(() -> {
+            TabController current = focusedTab.get();
+            current.setEnteredText(null);
+            current.setCurrent(url);
+            current.loadStateProperty().set(TabController.TabLoadState.CONNECTING);
+            omnibar.setText(url.toExternalForm());
+            Async.asyncStandard(() -> {
+                try {
+                    Document document = Jsoup.connect(url.toExternalForm()).get();
                     Platform.runLater(() -> {
-                        current.sceneGraphProperty().set(p);
-                        if (current == focusedTab.get()) {
-                            content.setContent(p);
-                        }
+                        current.setTitle(document.head().getElementsByTag("title").text());
+                        current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
                     });
-                });
-            } catch (UnknownHostException ex) {
-                search(original);
-            } catch (HttpStatusException ex) {
-                
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
-            }
+                    Async.asyncStandard(() -> {
+                        Parent p = (Parent) new Mapper(0).map(document);
+                        Platform.runLater(() -> {
+                            current.sceneGraphProperty().set(p);
+                            if (current == focusedTab.get()) {
+                                content.setContent(p);
+                            }
+                        });
+                    });
+                } catch (UnknownHostException ex) {
+                    search(original);
+                } catch (HttpStatusException ex) {
+                    Platform.runLater(() -> {
+                        current.setTitle("Failed to connect");
+                        current.sceneGraphProperty().set(Resources.directLoad("HttpErrorPage.fxml"));
+                    });
+                } catch (SocketException ex) {
+                    Platform.runLater(() -> {
+                        current.setTitle("Cannot connect to internet");
+                        current.sceneGraphProperty().set(Resources.directLoad("HttpErrorPage.fxml"));
+                    });
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
+                }
+            });
         });
     }
 
