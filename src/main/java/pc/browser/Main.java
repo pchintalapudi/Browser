@@ -5,15 +5,10 @@
  */
 package pc.browser;
 
+import pc.browser.tabs.TabController;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
-import java.net.MalformedURLException;
-import java.net.SocketException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -22,7 +17,6 @@ import java.util.stream.Collectors;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -33,7 +27,6 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
@@ -60,12 +53,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.fxmisc.easybind.EasyBind;
-import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import pc.browser.debug.SceneGraphAnalyzer;
-import pc.browser.render.elements.Mapper;
-import pc.browser.resources.Resources;
+import org.fxmisc.easybind.monadic.MonadicBinding;
+import pc.browser.tabs.TabState;
 
 /**
  *
@@ -110,7 +99,6 @@ public class Main {
         bScreenshot.setOnAction(e -> copy(imageWebScrolledContent()));
         pageMenu.getItems().add(sScreenshot);
         MenuItem inspectElement = new MenuItem("Inspect Element");
-        inspectElement.setOnAction(e -> SceneGraphAnalyzer.show(content.getContent()));
         pageMenu.getItems().add(inspectElement);
     }
 
@@ -119,11 +107,9 @@ public class Main {
         Bindings.bindContent(tabBar.getChildren(), tabs);
         focusedTab.addListener((o, b, s) -> {
             if (b != null) {
-                b.highlightSelected(false);
+                b.selectedProperty().set(false);
             }
-            if (s != null) {
-                s.highlightSelected(true);
-            }
+            s.selectedProperty().set(true);
             switchToTab(s);
         });
         newTab();
@@ -150,15 +136,16 @@ public class Main {
         lightingClip.widthProperty().bind(header.widthProperty());
         lightingClip.heightProperty().bind(header.heightProperty());
         root.addEventFilter(MouseEvent.MOUSE_MOVED, this::trackLighting);
-        reloadButtonText.textProperty().bind(EasyBind.select(focusedTab)
-                .selectObject(TabController::loadStateProperty)
-                .map(TabController.TabLoadState.IDLE::equals)
-                .map(b -> b ? "↻" : "×"));
+        MonadicBinding<Boolean> idle = EasyBind.select(focusedTab).selectObject(TabController::tabStateProperty).map(TabState.IDLE::equals);
+        reloadButtonText.textProperty().bind(idle.map(b -> b ? "↻" : "×"));
+        reloadButton.disableProperty().bind(idle.map(Boolean.FALSE::equals));
     }
 
     @FXML
     private void closeWindow() {
-//        tabs.clear();
+        for (int i = tabs.size() - 1; i > -1 && tabs.size() > 0; i--) {
+            tabs.remove(i).close();
+        }
         fade(() -> root.getScene().getWindow().hide(), true);
         animate.play();
     }
@@ -324,94 +311,18 @@ public class Main {
     private void reload() {
         content.getContent().setOpacity(0.5);
         requestFocus();
-        load(focusedTab.get().getCurrent(), null);
-    }
-
-    private void load(URL url, String original) {
-        Platform.runLater(() -> {
-            TabController current = focusedTab.get();
-            current.setEnteredText(null);
-            current.setCurrent(url);
-            current.loadStateProperty().set(TabController.TabLoadState.CONNECTING);
-            omnibar.setText(url.toExternalForm());
-            Async.asyncStandard(() -> {
-                try {
-                    Document document = Jsoup.connect(url.toExternalForm()).get();
-                    Platform.runLater(() -> {
-                        current.setTitle(document.head().getElementsByTag("title").text());
-                        current.loadStateProperty().set(TabController.TabLoadState.RENDERING);
-                    });
-                    Async.asyncStandard(() -> {
-                        Parent p = (Parent) new Mapper(0).map(document);
-                        Platform.runLater(() -> {
-                            current.sceneGraphProperty().set(p);
-                            if (current == focusedTab.get()) {
-                                content.setContent(p);
-                            }
-                        });
-                    });
-                } catch (UnknownHostException ex) {
-                    search(original);
-                } catch (HttpStatusException ex) {
-                    Platform.runLater(() -> {
-                        current.setTitle("Failed to connect");
-                        current.sceneGraphProperty().set(Resources.directLoad("HttpErrorPage.fxml"));
-                    });
-                } catch (SocketException ex) {
-                    Platform.runLater(() -> {
-                        current.setTitle("Cannot connect to internet");
-                        current.sceneGraphProperty().set(Resources.directLoad("HttpErrorPage.fxml"));
-                    });
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                } finally {
-                    Platform.runLater(() -> current.loadStateProperty().set(TabController.TabLoadState.IDLE));
-                }
-            });
-        });
     }
 
     @FXML
     private void load() {
-        URL url;
-        String text = omnibar.getText();
-        if (text.isEmpty()) {
-            return;
-        }
-        try {
-            String text0 = text.replace("https://", "http://");
-            if (!text0.contains("http://")) {
-                text0 = "http://" + text0;
-            }
-            url = new URL(text0);
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
-            try {
-                url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(omnibar.getText(), "utf-8") + "&sourceid=browser&ie=UTF-8");
-            } catch (MalformedURLException | UnsupportedEncodingException ex1) {
-                throw new RuntimeException(ex1);
-            }
-        }
-        TabController current = focusedTab.get();
-        current.getLog().commit(current.getCurrent(), current.getTitle());
-        requestFocus();
-        load(url, text);
-    }
-
-    private void search(String original) {
-        try {
-            URL url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(original, "utf-8") + "&sourceid=browser&ie=UTF-8");
-            load(url, original);
-        } catch (MalformedURLException | UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
-        }
+        focusedTab.get().load(omnibar.getText());
     }
 
     @FXML
     private void newTab() {
         TabController next = new TabController();
         next.onClose(() -> closeTab(next));
-        next.onClick(() -> focusedTab.set(next));
+        next.setOnMouseClicked(m -> focusedTab.set(next));
         tabs.add(next);
         focusedTab.set(next);
     }
@@ -422,14 +333,16 @@ public class Main {
         } else {
             if (focusedTab.get() == tab) {
                 int tabIndex = tabs.indexOf(tab);
-                focusedTab.set(tabIndex == 0 ? tabs.get(1) : tabs.get(tabIndex - 1));
+                if (tabIndex > -1) {
+                    focusedTab.set(tabIndex == 0 ? tabs.get(1) : tabs.get(tabIndex - 1));
+                }
             }
             tabs.remove(tab);
         }
     }
 
     private void switchToTab(TabController tab) {
-        content.setContent(tab.sceneGraphProperty().get());
+        content.contentProperty().bind(tab.sceneGraphProperty());
     }
 
     @FXML

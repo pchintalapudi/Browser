@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pc.browser.render.styles;
+package pc.browser.render;
 
 import java.util.regex.Pattern;
 
@@ -19,7 +19,7 @@ public enum DisplayType {
     private static final Pattern cssPattern = Pattern.compile("-");
 
     public static DisplayType read(String cssValue) {
-        return DisplayType.valueOf(cssPattern.matcher(cssValue).replaceAll("_").toUpperCase());
+        return Styler.toEnum(cssValue, DisplayType.class);
     }
 
     public static boolean isInline(DisplayType dt) {

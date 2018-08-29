@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pc.browser.render.styles;
+package pc.browser.render;
 
 import com.steadystate.css.dom.CSSStyleDeclarationImpl;
 import com.steadystate.css.parser.CSSOMParser;
@@ -216,7 +216,7 @@ public final class Styler {
             = Pattern.compile("(\\d+(?:\\.(?:\\d+)?)?)(cm|mm|in|px|pt|pc|"
                     + "em|ex|ch|rem|vw|vh|vmin|vmax|\\%)?");
 
-    private static double toPixels(String value) {
+    public static double toPixels(String value) {
         Matcher matcher = lengthPattern.matcher(value);
         if (matcher.find()) {
             try {
