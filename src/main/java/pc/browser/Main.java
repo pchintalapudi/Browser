@@ -54,7 +54,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
-import pc.browser.events.LoadEvent;
 import pc.browser.tabs.TabState;
 
 /**
@@ -138,9 +137,6 @@ public class Main {
         reloadButtonText.textProperty().bind(idle.map(b -> b ? "↻" : "×"));
         reloadButton.disableProperty().bind(idle.map(Boolean.FALSE::equals));
         content.contentProperty().bind(EasyBind.select(focusedTab).selectObject(TabController::sceneGraphProperty));
-        root.addEventHandler(LoadEvent.LOAD_EVENT, e -> {
-            focusedTab.get().load(e.getLoadPayload());
-        });
     }
 
     @FXML

@@ -12,6 +12,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -113,13 +116,22 @@ public class TabController extends AnchorPane {
 
     private final AtomicInteger loadId = new AtomicInteger();
     private final AtomicInteger loadTaskCount = new AtomicInteger();
+    private final ReadWriteLock idLock = new ReentrantReadWriteLock();
 
     private final RenderPool pool = new RenderPool();
 
     private void loadURL(URL url, Runnable onUnknownHost) {
         Async.asyncStandard(() -> {
+            Lock l = idLock.writeLock();
             int id;
-            id = loadId.incrementAndGet();
+            try {
+                l.lockInterruptibly();
+                id = loadId.incrementAndGet();
+            } catch (InterruptedException ex) {
+                return;
+            } finally {
+                l.unlock();
+            }
             try {
                 Platform.runLater(() -> setTabState(TabState.CONNECTING));
                 Document doc = Jsoup.connect(url.toExternalForm()).get();
@@ -141,17 +153,33 @@ public class TabController extends AnchorPane {
 
     private void renderAsync(Runnable task, int loadId, RenderTask taskType, int priority) {
         pool.asyncRender(() -> {
-            if (this.loadId.get() == loadId) {
-                try {
-                    incrementAsyncCount();
-                    task.run();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    if (this.loadId.get() == loadId) {
-                        decrementAsyncCount();
-                    };
+            Lock l0 = idLock.readLock();
+            try {
+                l0.lockInterruptibly();
+                if (this.loadId.get() == loadId) {
+                    try {
+                        incrementAsyncCount();
+                        task.run();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        Lock l = idLock.readLock();
+                        try {
+                            l.lockInterruptibly();
+                            if (this.loadId.get() == loadId) {
+                                decrementAsyncCount();
+                            }
+                        } catch (InterruptedException ex) {
+                        } finally {
+                            l.unlock();
+                        }
+                    }
                 }
+            } catch (InterruptedException ex) {
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+            } finally {
+                l0.unlock();
             }
         }, taskType, priority);
     }

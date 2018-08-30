@@ -33,7 +33,7 @@ public class RenderPool {
             try {
                 l.lockInterruptibly();
                 renderTask.run();
-            } catch (InterruptedException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             } finally {
                 l.unlock();
