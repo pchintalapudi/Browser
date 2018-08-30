@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pc.browser.render;
+package pc.browser.render.css;
 
+import pc.browser.render.css.Styler;
 import java.util.regex.Pattern;
 
 /**
@@ -19,7 +20,7 @@ public enum DisplayType {
     private static final Pattern cssPattern = Pattern.compile("-");
 
     public static DisplayType read(String cssValue) {
-        return Styler.toEnum(cssValue, DisplayType.class);
+        return StyleUtils.toEnum(cssValue, DisplayType.class);
     }
 
     public static boolean isInline(DisplayType dt) {

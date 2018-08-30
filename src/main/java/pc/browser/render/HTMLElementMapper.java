@@ -5,10 +5,19 @@
  */
 package pc.browser.render;
 
+import com.steadystate.css.parser.CSSOMParser;
+import com.steadystate.css.parser.SACParserCSS3;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Arrays;
+import pc.browser.render.css.DisplayType;
+import pc.browser.render.css.Styler;
 import java.util.function.BiConsumer;
 import javafx.scene.Group;
+import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.async.RenderTask;
+import pc.browser.render.css.StyleUtils;
 import pc.browser.render.nonsemantic.ImageElement;
 import pc.browser.render.nonsemantic.TextAreaElement;
 import pc.browser.render.nonsemantic.TextInputElement;
@@ -20,18 +29,36 @@ import pc.browser.render.nonsemantic.TextNode;
  */
 public class HTMLElementMapper {
 
-    private final Styler styler = new Styler();
+    private Styler styler = new Styler();
     private final BiConsumer<Runnable, RenderTask> async;
 
     public HTMLElementMapper(BiConsumer<Runnable, RenderTask> async) {
         this.async = async;
     }
 
-    public javafx.scene.Node map(org.jsoup.nodes.Node node) {
+    public javafx.scene.Node map(org.jsoup.nodes.Document document) {
+        this.styler = new Styler();
+        document.getElementsByTag("link").stream().filter(HTMLElementMapper::isStyleSheetLink)
+                .map(e -> e.absUrl("href")).map(InputSource::new).forEach(is -> {
+            try {
+                styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(is, null, null));
+            } catch (IOException ex) {
+            }
+        });
+        try {
+            styler.appendStyleSheet(new CSSOMParser(new SACParserCSS3()).parseStyleSheet(new InputSource(
+                    new StringReader(document.getElementsByTag("style").text())), null, null));
+        } catch (IOException ex) {
+        }
+        return map(document.body());
+    }
+
+    private javafx.scene.Node map(org.jsoup.nodes.Node node) {
         CSSStyleDeclaration style = styler.style(node);
-        if (Styler.getDisplayType(style) != DisplayType.NONE) {
+        if (StyleUtils.getDisplayType(style) != DisplayType.NONE) {
             if (node instanceof org.jsoup.nodes.TextNode) {
                 TextNode tn = new TextNode(((org.jsoup.nodes.TextNode) node).text());
+                tn.setUserData(node);
                 async.accept(tn.applyCSS(style), RenderTask.PAINT);
                 return tn;
             } else if (node instanceof org.jsoup.nodes.Element) {
@@ -56,5 +83,12 @@ public class HTMLElementMapper {
             }
         }
         return new Group();
+    }
+
+    private static boolean isStyleSheetLink(org.jsoup.nodes.Element element) {
+        return ((element.hasAttr("as") && element.attr("as").equals("style"))
+                || (element.hasAttr("type") && element.attr("type").equals("text/css")
+                && element.hasAttr("rel") && element.attr("rel").equals("stylesheet")))
+                && element.hasAttr("href");
     }
 }

@@ -5,14 +5,13 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.inspect.SceneGraph" fx:id="root">
+<VBox fx:id="root" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.inspect.SceneGraph">
    <children>
       <HBox alignment="CENTER_RIGHT" VBox.vgrow="NEVER">
          <children>
             <Button mnemonicParsing="false" onAction="#close" text="X" />
          </children>
       </HBox>
-       <TreeView fx:id="treeView" />
+       <TreeView fx:id="treeView" VBox.vgrow="ALWAYS" />
    </children>
 </VBox>

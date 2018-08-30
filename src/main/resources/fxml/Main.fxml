@@ -114,7 +114,7 @@
                 <HBox VBox.vgrow="ALWAYS">
                     <children>
                         <ScrollPane id="content" fx:id="content" fitToHeight="true" fitToWidth="true" onMouseClicked="#pageClick" styleClass="background" HBox.hgrow="ALWAYS" />
-                        <fx:include source="SceneGraph.fxml" visible="false" styleClass="non-content" maxWidth="400.0" minWidth="400.0" prefWidth="400.0" fx:id="sceneGraph"/>
+                        <fx:include source="SceneGraph.fxml" visible="false" maxWidth="400.0" minWidth="400.0" prefWidth="400.0" fx:id="sceneGraph"/>
                     </children>
                 </HBox>
             </children>

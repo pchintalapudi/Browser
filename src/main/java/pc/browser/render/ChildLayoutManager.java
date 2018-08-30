@@ -5,6 +5,8 @@
  */
 package pc.browser.render;
 
+import pc.browser.render.css.DisplayType;
+import pc.browser.render.css.Styler;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,6 +14,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import pc.browser.render.css.StyleUtils;
 
 /**
  *
@@ -25,8 +28,8 @@ public class ChildLayoutManager extends StackPane {
     public void manage(org.jsoup.nodes.Element element) {
         try {
             List<DisplayType> displayTypes = element.childNodes().stream().map(styler::style)
-                    .map(Styler::getDisplayType).collect(Collectors.toList());
-            DisplayType parent = Styler.getDisplayType(styler.style(element));
+                    .map(StyleUtils::getDisplayType).collect(Collectors.toList());
+            DisplayType parent = StyleUtils.getDisplayType(styler.style(element));
             switch (parent) {
                 default:
                     layoutStandard(displayTypes, element.childNodes());
