@@ -24,7 +24,7 @@ and open the template in the editor.
     back-inv-dvis:#ffffff44;
 }
 
-.button, .window-button, .close-button, .transparentify {
+.non-content .button, .non-content .window-button, .non-content .close-button, .non-content .transparentify {
     -fx-background-color:transparent;
 }
 
@@ -47,6 +47,11 @@ and open the template in the editor.
     -fx-text-fill:main-transp-med;
 }
 
+.non-content .tree-view .text {
+    -fx-text-fill:black;
+    -fx-text:black;
+}
+
 #main-bar, #util-back {
     -fx-background-color: back-main;
 }
@@ -55,47 +60,47 @@ and open the template in the editor.
     -fx-background-color:main-transp-dvis;
 }
 
-.null-back {
+.non-content .null-back {
     -fx-background-color:back-transp-slight;
 }
 
-.tab-back {
+.non-content .tab-back {
     -fx-background-color:back-transp-dvis;
 }
 
-.tab {
+.non-content .tab {
     -fx-background-color:back-transp-vis;
 }
 
-.tab:selected, .util-bar {
+.non-content .tab:selected, .util-bar {
     -fx-background-color:main-transp-med;
 }
 
-.button:hover, .tab:hover {
+.non-content .button:hover, .non-content .tab:hover {
     -fx-background-color:main-transp-med;
 }
 
-.button:pressed, .tab:hover {
+.non-content .button:pressed, .non-content .tab:hover {
     -fx-background-color:main-main
 }
 
-.close-button:hover {
+.non-content .close-button:hover {
     -fx-background-color:#ff000088;
 }
 
-.close-button:pressed {
+.non-content .close-button:pressed {
     -fx-background-color:red;
 }
 
-.window-button:hover {
+.non-content .window-button:hover {
     -fx-background-color:back-inv-vis;
 }
 
-.window-button:pressed {
+.non-content .window-button:pressed {
     -fx-background-color:back-inv-dvis;
 }
 
-.text-input {
+.non-content .text-input {
     -fx-background-color:derive(white, -10%);
     -fx-border-color:derive(white, -15%);
     -fx-border-width:2;

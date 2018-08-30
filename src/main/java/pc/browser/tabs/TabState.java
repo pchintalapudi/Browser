@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pc.browser.render.styles;
+package pc.browser.tabs;
 
 /**
  *
  * @author prem
  */
-public class Background {
-    
-    public enum Repeat {
-        REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT;
-    }
+public enum TabState {
+    CONNECTING, RENDERING, IDLE;
 }

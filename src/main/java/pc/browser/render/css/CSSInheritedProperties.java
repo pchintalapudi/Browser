@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pc.browser.render.styles;
+package pc.browser.render.css;
+
+import pc.browser.render.css.Styler;
 
 /**
  *
@@ -22,6 +24,6 @@ public enum CSSInheritedProperties {
     }
 
     public CSSInheritedProperties fromCSSProperty(String cssProperty) {
-        return valueOf(cssProperty.replace("-", "_").toUpperCase());
+        return StyleUtils.toEnum(cssProperty, CSSInheritedProperties.class);
     }
 }
