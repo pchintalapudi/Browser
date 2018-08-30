@@ -10,15 +10,26 @@ import com.steadystate.css.parser.SACParserCSS3;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import pc.browser.render.css.DisplayType;
 import pc.browser.render.css.Styler;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javafx.collections.FXCollections;
 import javafx.scene.Group;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.async.RenderTask;
+import pc.browser.cache.ImageCache;
 import pc.browser.render.css.StyleUtils;
+import pc.browser.render.nonsemantic.ButtonElement;
 import pc.browser.render.nonsemantic.ImageElement;
+import pc.browser.render.nonsemantic.ProgressElement;
 import pc.browser.render.nonsemantic.TextAreaElement;
 import pc.browser.render.nonsemantic.TextInputElement;
 import pc.browser.render.nonsemantic.TextNode;
@@ -63,26 +74,21 @@ public class HTMLElementMapper {
                 return tn;
             } else if (node instanceof org.jsoup.nodes.Element) {
                 org.jsoup.nodes.Element element = (org.jsoup.nodes.Element) node;
-                switch (element.tagName()) {
-                    case "input":
-                        TextInputElement tie = new TextInputElement();
-                        return tie;
-                    case "textarea":
-                        TextAreaElement tae = new TextAreaElement();
-                        return tae;
-                    case "img":
-                        ImageElement ie = new ImageElement();
-                        return ie;
-                    default:
-                        ElementWrapper wrapper = new ElementWrapper();
-                        wrapper.setElement(element, this::map, styler);
-                        async.accept(wrapper.applyLayoutCSS(style), RenderTask.LAYOUT);
-                        async.accept(wrapper.applyPaintCSS(style), RenderTask.PAINT);
-                        return wrapper;
+                if (nonSemanticElements.contains(element.tagName())) {
+                    return mapNonSemantics(element);
+                } else {
+                    ElementWrapper wrapper = new ElementWrapper();
+                    wrapper.setElement(element, this::map, styler);
+                    async.accept(wrapper.applyLayoutCSS(style), RenderTask.LAYOUT);
+                    async.accept(wrapper.applyPaintCSS(style), RenderTask.PAINT);
+                    return wrapper;
                 }
+            } else {
+                return new Group();
             }
+        } else {
+            return new Group();
         }
-        return new Group();
     }
 
     private static boolean isStyleSheetLink(org.jsoup.nodes.Element element) {
@@ -90,5 +96,64 @@ public class HTMLElementMapper {
                 || (element.hasAttr("type") && element.attr("type").equals("text/css")
                 && element.hasAttr("rel") && element.attr("rel").equals("stylesheet")))
                 && element.hasAttr("href");
+    }
+
+    private static final Set<String> nonSemanticElements = new HashSet<>(
+            Arrays.asList("img", "button", "select", "datalist", "input",
+                    "textarea", "progress"));
+
+    private javafx.scene.Node mapNonSemantics(org.jsoup.nodes.Element element) {
+        switch (element.tagName()) {
+            case "img":
+                if (element.hasAttr("src") && !element.attr("src").isEmpty() && !element.absUrl("src").isEmpty()) {
+                    ImageElement ie = new ImageElement();
+                    ie.setImage(ImageCache.getImageForUrl(element.absUrl("src")));
+                    return ie;
+                } else {
+                    return new Group();
+                }
+            case "button":
+                return new ButtonElement(element.text());
+            case "select":
+                List<String> options = retrieveOptions(element);
+                ChoiceBox<String> choices = new ChoiceBox<>(FXCollections.observableArrayList(options));
+                choices.getSelectionModel().selectFirst();
+                return choices;
+            case "datalist":
+                options = retrieveOptions(element);
+                ComboBox<String> combo = new ComboBox<>(FXCollections.observableArrayList(options));
+                return combo;
+            case "input":
+                return new TextInputElement(element.hasAttr("value") ? element.attr("value") : "");
+            case "textarea":
+                return new TextAreaElement(element.text());
+            case "progress":
+                ProgressElement progress = new ProgressElement();
+                if (element.hasAttr("value") && element.hasAttr("max")) {
+                    try {
+                        progress.setProgress(Double.parseDouble(element.attr("value")) / Double.parseDouble(element.attr("max")));
+                    } catch (NumberFormatException ex) {
+                    }
+                }
+                return progress;
+            default:
+                return new Group();
+        }
+    }
+
+    private static List<String> retrieveOptions(org.jsoup.nodes.Element selectOrDatalist) {
+        return selectOrDatalist.childNodes().stream().filter(org.jsoup.nodes.Element.class::isInstance)
+                .map(org.jsoup.nodes.Element.class::cast)
+                .flatMap(e -> e.tagName().equals("optgroup") ? recursiveBreakdown(e)
+                : e.tagName().equals("option") ? Stream.of(e) : Stream.empty())
+                .map(org.jsoup.nodes.Element::text)
+                .collect(Collectors.toList());
+    }
+
+    private static Stream<org.jsoup.nodes.Element> recursiveBreakdown(org.jsoup.nodes.Element optGroup) {
+        return optGroup.childNodes().stream().filter(org.jsoup.nodes.Element.class::isInstance)
+                .map(org.jsoup.nodes.Element.class::cast)
+                .flatMap(e -> e.tagName().equals("optgroup") ? recursiveBreakdown(e)
+                : e.tagName().equals("option") ? Stream.of(e) : Stream.empty());
     }
 }

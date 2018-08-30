@@ -153,6 +153,7 @@ public class ElementWrapper extends StackPane {
         contentBox.setStyler(styler);
         contentBox.setMapper(mapper);
         setUserData(element);
+        getProperties().put("", StyleUtils.getDisplayType(styler.style(element)));
         contentBox.manage(element);
     }
 }

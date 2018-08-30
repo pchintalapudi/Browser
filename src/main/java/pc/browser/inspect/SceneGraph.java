@@ -43,28 +43,16 @@ public class SceneGraph {
         treeView.setCellFactory(tv -> {
             TreeCell<Node> cell = new TreeCell<>();
             cell.textProperty().bind(Bindings.createStringBinding(() -> cell.getItem() == null ? "" : toString(cell.getItem()), cell.itemProperty()));
-//            BooleanProperty entered = new SimpleBooleanProperty();
-//            cell.setOnMouseEntered(m -> {
-//                if (cell.getItem() != null && !cell.isSelected()) {
-//                    cell.getItem().setStyle("background-color:#0088ff22");
-//                }
-//                entered.set(true);
-//            });
-//            cell.setOnMouseExited(m -> {
-//                if (cell.getItem() != null && !cell.isSelected()) {
-//                    cell.getItem().setStyle("");
-//                }
-//                entered.set(false);
-//            });
-//            cell.selectedProperty().addListener((o, b, s) -> {
-//                if (cell.getItem() != null) {
-//                    if (s) {
-//                        cell.getItem().setStyle("background-color:#0088ff44");
-//                    } else {
-//                        cell.getItem().setStyle(entered.get() ? "background-color:#0088ff22" : "");
-//                    }
-//                }
-//            });
+            cell.setOnMouseEntered(m -> {
+                if (cell.getItem() != null) {
+                    cell.getItem().getStyleClass().add("highlight");
+                }
+            });
+            cell.setOnMouseExited(m -> {
+                if (cell.getItem() != null) {
+                    cell.getItem().getStyleClass().remove("highlight");
+                }
+            });
             return cell;
         });
     }
@@ -96,7 +84,7 @@ public class SceneGraph {
         if (n.getUserData() instanceof TextNode) {
             return n.getClass().getSimpleName() + " Text: " + ((TextNode) n.getUserData()).text();
         } else if (n.getUserData() instanceof Element) {
-            return n.getClass().getSimpleName() + " DOM Element: " + ((Element) n.getUserData()).tagName();
+            return n.getClass().getSimpleName() + " DOM Element: " + ((Element) n.getUserData()).tagName() + " DisplayType: " + n.getProperties().get("");
         } else {
             return n.getClass().getSimpleName();
         }

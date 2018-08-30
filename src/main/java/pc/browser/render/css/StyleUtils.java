@@ -8,11 +8,18 @@ package pc.browser.render.css;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.scene.Cursor;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.util.Pair;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import pc.browser.cache.ImageCache;
 
 /**
  *
@@ -145,6 +152,34 @@ public class StyleUtils {
 
     static <E extends Enum<E>> E toEnum(String str, Class<E> enumClass) {
         return Enum.valueOf(enumClass, str.toUpperCase().replace("-", "_").trim());
+    }
+
+    private Background getCSSBackground(CSSStyleDeclaration styling, String imgUrl) {
+        String bcolor = styling.getPropertyValue("background-color");
+        if (bcolor.isEmpty()) {
+            bcolor = styling.getPropertyValue("background-image");
+            String rep = styling.getPropertyValue("background-repeat");
+            String pos = styling.getPropertyValue("background-position");
+            try {
+                if (bcolor.isEmpty()) {
+                    return Background.EMPTY;
+                } else {
+                    return new Background(new BackgroundImage(ImageCache.getImageForUrl(imgUrl),
+                            BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, null, BackgroundSize.DEFAULT));
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return Background.EMPTY;
+            }
+        } else {
+            try {
+                return new Background(new BackgroundFill(Color.web(bcolor), null, null));
+            } catch (IllegalArgumentException ex) {
+                System.out.println("styling-block:");
+                System.out.println(styling.getCssText());
+                return Background.EMPTY;
+            }
+        }
     }
 
 }
