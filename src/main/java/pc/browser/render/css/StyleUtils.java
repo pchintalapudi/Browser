@@ -64,7 +64,8 @@ public class StyleUtils {
         return new Pair<>(Font.font(fontFamily, fontWeight, posture, fontSize), !notUnderline);
     }
 
-    public static Cursor translate(String cssValue) {
+    public static Cursor getCursor(CSSStyleDeclaration styling) {
+        String cssValue = styling.getPropertyValue("cursor");
         switch (cssValue.trim().toLowerCase()) {
             case "default":
             default:
@@ -133,7 +134,7 @@ public class StyleUtils {
                 } else {
                     return 0;
                 }
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 return 16;
             }
         } else {
@@ -154,7 +155,7 @@ public class StyleUtils {
         return Enum.valueOf(enumClass, str.toUpperCase().replace("-", "_").trim());
     }
 
-    private Background getCSSBackground(CSSStyleDeclaration styling, String imgUrl) {
+    public static Background getCSSBackground(CSSStyleDeclaration styling, String imgUrl) {
         String bcolor = styling.getPropertyValue("background-color");
         if (bcolor.isEmpty()) {
             bcolor = styling.getPropertyValue("background-image");

@@ -78,9 +78,11 @@ public class HTMLElementMapper {
                     return mapNonSemantics(element);
                 } else {
                     ElementWrapper wrapper = new ElementWrapper();
-                    wrapper.setElement(element, this::map, styler);
-                    async.accept(wrapper.applyLayoutCSS(style), RenderTask.LAYOUT);
-                    async.accept(wrapper.applyPaintCSS(style), RenderTask.PAINT);
+                    async.accept(() -> {
+                        wrapper.setElement(element, this::map, styler);
+                        async.accept(wrapper.applyLayoutCSS(style), RenderTask.LAYOUT);
+                        async.accept(wrapper.applyPaintCSS(style), RenderTask.PAINT);
+                    }, RenderTask.LAYOUT);
                     return wrapper;
                 }
             } else {
