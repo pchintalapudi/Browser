@@ -47,6 +47,11 @@ and open the template in the editor.
     -fx-text-fill:main-transp-med;
 }
 
+.non-content .tree-cell .text {
+    -fx-text-fill:black;
+    -fx-text:black;
+}
+
 #main-bar, #util-back {
     -fx-background-color: back-main;
 }

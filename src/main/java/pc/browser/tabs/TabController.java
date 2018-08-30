@@ -12,6 +12,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -31,6 +34,8 @@ import javafx.scene.layout.HBox;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import pc.browser.Async;
+import pc.browser.async.RenderTask;
+import pc.browser.render.HTMLElementMapper;
 import pc.browser.resources.Resources;
 import pc.browser.tabs.async.RenderPool;
 
@@ -61,44 +66,10 @@ public class TabController extends AnchorPane {
         } catch (IOException ex) {
             Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        icon.imageProperty().addListener((o, b, s) -> {
-            if (s == null) {
-                tabContent.getChildren().remove(icon);
-            } else {
-                tabContent.getChildren().add(0, icon);
-            }
-        });
-        tabContent.getChildren().remove(icon);
-        tabContent.getChildren().remove(progressIndicator);
-        tabStateProperty.addListener((o, b, s) -> {
-            switch (s) {
-                case IDLE:
-                    tabContent.getChildren().remove(progressIndicator);
-                    if (icon.getImage() != null) {
-                        tabContent.getChildren().add(0, icon);
-                    }
-                    break;
-                case CONNECTING:
-                    if (b == TabState.IDLE) {
-                        tabContent.getChildren().remove(icon);
-                        tabContent.getChildren().add(0, progressIndicator);
-                    }
-                    break;
-                case RENDERING:
-                    if (b == TabState.IDLE) {
-                        tabContent.getChildren().remove(icon);
-                        tabContent.getChildren().add(0, progressIndicator);
-                    }
-            }
-        });
-        selectedProperty.addListener((o, b, s) -> {
-            pseudoClassStateChanged(SELECTED, s);
-            if (s) {
-                pool.unlock();
-            } else {
-                pool.lock();
-            }
-        });
+        icon.managedProperty().bind(icon.visibleProperty());
+        icon.visibleProperty().bind(icon.imageProperty().isNotNull().and(progressIndicator.visibleProperty().not()));
+        progressIndicator.managedProperty().bind(progressIndicator.visibleProperty());
+        progressIndicator.visibleProperty().bind(tabStateProperty.isNotEqualTo(TabState.IDLE));
     }
 
     public void close() {
@@ -129,7 +100,7 @@ public class TabController extends AnchorPane {
         return selectedProperty;
     }
 
-    private final ObjectProperty<TabState> tabStateProperty = new SimpleObjectProperty<>();
+    private final ObjectProperty<TabState> tabStateProperty = new SimpleObjectProperty<>(TabState.IDLE);
 
     public final TabState getTabState() {
         return tabStateProperty.get();
@@ -145,20 +116,32 @@ public class TabController extends AnchorPane {
 
     private final AtomicInteger loadId = new AtomicInteger();
     private final AtomicInteger loadTaskCount = new AtomicInteger();
+    private final ReadWriteLock idLock = new ReentrantReadWriteLock();
 
     private final RenderPool pool = new RenderPool();
 
     private void loadURL(URL url, Runnable onUnknownHost) {
         Async.asyncStandard(() -> {
+            Lock l = idLock.writeLock();
+            int id;
             try {
-                loadId.incrementAndGet();
-                loadTaskCount.set(0);
+                l.lockInterruptibly();
+                id = loadId.incrementAndGet();
+            } catch (InterruptedException ex) {
+                return;
+            } finally {
+                l.unlock();
+            }
+            try {
                 Platform.runLater(() -> setTabState(TabState.CONNECTING));
                 Document doc = Jsoup.connect(url.toExternalForm()).get();
                 Platform.runLater(() -> {
+                    loadTaskCount.set(0);
                     tabTitle.setText(doc.head().getElementsByTag("title").get(0).text());
                     setTabState(TabState.RENDERING);
                 });
+                Node n = new HTMLElementMapper((r, tt) -> renderAsync(r, id, tt, 0)).map(doc);
+                Platform.runLater(() -> sceneGraphProperty.set(n));
             } catch (UnknownHostException ex) {
                 onUnknownHost.run();
             } catch (IOException ex) {
@@ -166,6 +149,49 @@ public class TabController extends AnchorPane {
                 Platform.runLater(() -> setTabState(TabState.IDLE));
             }
         });
+    }
+
+    private void renderAsync(Runnable task, int loadId, RenderTask taskType, int priority) {
+        pool.asyncRender(() -> {
+            Lock l0 = idLock.readLock();
+            try {
+                l0.lockInterruptibly();
+                if (this.loadId.get() == loadId) {
+                    try {
+                        incrementAsyncCount();
+                        task.run();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        Lock l = idLock.readLock();
+                        try {
+                            l.lockInterruptibly();
+                            if (this.loadId.get() == loadId) {
+                                decrementAsyncCount();
+                            }
+                        } catch (InterruptedException ex) {
+                        } finally {
+                            l.unlock();
+                        }
+                    }
+                }
+            } catch (InterruptedException ex) {
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+            } finally {
+                l0.unlock();
+            }
+        }, taskType, priority);
+    }
+
+    private void incrementAsyncCount() {
+        loadTaskCount.incrementAndGet();
+    }
+
+    private void decrementAsyncCount() {
+        if (loadTaskCount.decrementAndGet() == 0) {
+            Platform.runLater(() -> setTabState(TabState.IDLE));
+        }
     }
 
     private void search(String original) {
@@ -176,7 +202,7 @@ public class TabController extends AnchorPane {
             throw new RuntimeException(ex);
         }
     }
-    
+
     public void load(String trial) {
         try {
             loadURL(new URL(trial), () -> search(trial));

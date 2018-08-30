@@ -6,8 +6,8 @@
 package pc.browser.events;
 
 import javafx.event.Event;
-import javafx.event.EventTarget;
 import javafx.event.EventType;
+import pc.browser.tabs.TabController;
 
 /**
  *
@@ -17,12 +17,20 @@ public class LoadEvent extends Event {
 
     public static final EventType<LoadEvent> LOAD_EVENT = new EventType<>("load");
 
-    public LoadEvent() {
+    private final TabController tabSource;
+    private final String loadPayload;
+
+    public LoadEvent(String loadPayload, TabController source) {
         super(LOAD_EVENT);
+        this.loadPayload = loadPayload;
+        this.tabSource = source;
     }
 
-    public LoadEvent(Object source, EventTarget target) {
-        super(source, target, LOAD_EVENT);
+    public String getLoadPayload() {
+        return loadPayload;
     }
 
+    public TabController getTabSource() {
+        return tabSource;
+    }
 }

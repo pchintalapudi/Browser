@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pc.browser.inspect.SceneGraph" fx:id="root">
+   <children>
+      <HBox alignment="CENTER_RIGHT" VBox.vgrow="NEVER">
+         <children>
+            <Button mnemonicParsing="false" onAction="#close" text="X" />
+         </children>
+      </HBox>
+       <TreeView fx:id="treeView" />
+   </children>
+</VBox>

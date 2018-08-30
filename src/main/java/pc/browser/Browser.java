@@ -44,7 +44,6 @@ public class Browser extends Application {
         showTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(300), new KeyValue(stageOpacity, 1d)));
         primaryStage.setOnShown(we -> showTimeline.play());
         primaryStage.show();
-        System.out.println(primaryStage.getScene().getCamera());
     }
 
     public static void main(String[] args) {

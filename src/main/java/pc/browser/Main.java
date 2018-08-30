@@ -27,6 +27,7 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
@@ -82,6 +83,8 @@ public class Main {
     private Button backButton, forwardButton, reloadButton;
     @FXML
     private Label reloadButtonText;
+    @FXML
+    private Node sceneGraph;
 
     private final ObservableList<TabController> tabs = FXCollections.observableArrayList();
     private final ObjectProperty<TabController> focusedTab = new SimpleObjectProperty<>();
@@ -99,19 +102,14 @@ public class Main {
         bScreenshot.setOnAction(e -> copy(imageWebScrolledContent()));
         pageMenu.getItems().add(sScreenshot);
         MenuItem inspectElement = new MenuItem("Inspect Element");
+        inspectElement.setOnAction(e -> sceneGraph.setVisible(true));
         pageMenu.getItems().add(inspectElement);
     }
 
     @FXML
     private void initialize() {
         Bindings.bindContent(tabBar.getChildren(), tabs);
-        focusedTab.addListener((o, b, s) -> {
-            if (b != null) {
-                b.selectedProperty().set(false);
-            }
-            s.selectedProperty().set(true);
-            switchToTab(s);
-        });
+        sceneGraph.managedProperty().bind(sceneGraph.visibleProperty());
         newTab();
         KeyCodeCombination newTab = new KeyCodeCombination(KeyCode.T, KeyCombination.SHORTCUT_DOWN);
         KeyCodeCombination closeTab = new KeyCodeCombination(KeyCode.W, KeyCombination.SHORTCUT_DOWN);
@@ -139,6 +137,7 @@ public class Main {
         MonadicBinding<Boolean> idle = EasyBind.select(focusedTab).selectObject(TabController::tabStateProperty).map(TabState.IDLE::equals);
         reloadButtonText.textProperty().bind(idle.map(b -> b ? "↻" : "×"));
         reloadButton.disableProperty().bind(idle.map(Boolean.FALSE::equals));
+        content.contentProperty().bind(EasyBind.select(focusedTab).selectObject(TabController::sceneGraphProperty));
     }
 
     @FXML
@@ -324,6 +323,7 @@ public class Main {
         next.onClose(() -> closeTab(next));
         next.setOnMouseClicked(m -> focusedTab.set(next));
         tabs.add(next);
+        next.selectedProperty().bind(focusedTab.isEqualTo(next));
         focusedTab.set(next);
     }
 
@@ -341,10 +341,6 @@ public class Main {
         }
     }
 
-    private void switchToTab(TabController tab) {
-        content.contentProperty().bind(tab.sceneGraphProperty());
-    }
-
     @FXML
     private void requestFocus() {
         root.requestFocus();
@@ -359,8 +355,7 @@ public class Main {
             commands.add("-cp");
             commands.add(ManagementFactory.getRuntimeMXBean().getClassPath());
             commands.add(Browser.class.getName());
-            System.out.println(commands.stream().collect(Collectors.joining(" ")));
-            Process p = new ProcessBuilder().inheritIO().command(commands).start();
+            new ProcessBuilder().inheritIO().command(commands).start();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }

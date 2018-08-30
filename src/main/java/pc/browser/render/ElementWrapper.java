@@ -6,11 +6,12 @@
 package pc.browser.render;
 
 import java.util.Arrays;
+import java.util.function.Function;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
-import org.jsoup.nodes.Element;
 import org.w3c.dom.css.CSSStyleDeclaration;
 
 /**
@@ -31,9 +32,19 @@ public class ElementWrapper extends StackPane {
         return contentBox.getChildren();
     }
 
-    public void applyCSS(CSSStyleDeclaration styling) {
-        marginBox.setPadding(getMargins(styling));
-        paddingBox.setPadding(getPaddings(styling));
+    public Runnable applyLayoutCSS(CSSStyleDeclaration styling) {
+        return () -> {
+            Insets margins = getMargins(styling), padding = getPaddings(styling);
+            Platform.runLater(() -> {
+                marginBox.setPadding(margins);
+                paddingBox.setPadding(padding);
+            });
+        };
+    }
+
+    public Runnable applyPaintCSS(CSSStyleDeclaration styling) {
+        return () -> {
+        };
     }
 
     private Insets getMargins(CSSStyleDeclaration styling) {
@@ -136,6 +147,10 @@ public class ElementWrapper extends StackPane {
         return new Insets(paddings[0], paddings[1], paddings[2], paddings[3]);
     }
 
-    public void setElement(org.jsoup.nodes.Node node) {
+    public void setElement(org.jsoup.nodes.Element element, Function<org.jsoup.nodes.Node, Node> mapper, Styler styler) {
+        contentBox.setStyler(styler);
+        contentBox.setMapper(mapper);
+        setUserData(element);
+        contentBox.manage(element);
     }
 }

@@ -15,8 +15,8 @@
             <children>
                 <HBox fx:id="tabContent" alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
                     <children>
+                        <ProgressIndicator fx:id="progressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" HBox.hgrow="NEVER" />
                         <ImageView fx:id="icon" fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true" />
-                  <ProgressIndicator fx:id="progressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" HBox.hgrow="NEVER" />
                         <StackPane alignment="CENTER_LEFT" cache="true" cacheHint="QUALITY" HBox.hgrow="ALWAYS">
                             <children>
                                 <Label fx:id="tabTitle" text="New Tab" />

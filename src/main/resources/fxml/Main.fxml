@@ -89,16 +89,16 @@
                                                     <children>
                                                         <Button fx:id="backButton" mnemonicParsing="false" onAction="#back" text="🡨" />
                                                         <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#forward" text="🡪" />
-                                          <StackPane>
-                                             <children>
-                                                              <Button fx:id="reloadButton" maxWidth="22.0" mnemonicParsing="false" onAction="#reload" prefWidth="22.0" />
-                                                <Label fx:id="reloadButtonText" mouseTransparent="true" text="↻">
-                                                   <font>
-                                                      <Font size="18.0" />
-                                                   </font>
-                                                </Label>
-                                             </children>
-                                          </StackPane>
+                                                        <StackPane>
+                                                            <children>
+                                                                <Button fx:id="reloadButton" maxWidth="22.0" mnemonicParsing="false" onAction="#reload" prefWidth="22.0" />
+                                                                <Label fx:id="reloadButtonText" mouseTransparent="true" text="↻">
+                                                                    <font>
+                                                                        <Font size="18.0" />
+                                                                    </font>
+                                                                </Label>
+                                                            </children>
+                                                        </StackPane>
                                                         <TextField id="omnibar" fx:id="omnibar" onAction="#load" HBox.hgrow="ALWAYS" />
                                                     </children>
                                                 </HBox>
@@ -111,7 +111,12 @@
                         </StackPane>
                     </children>
                 </VBox>
-                <ScrollPane fx:id="content" fitToHeight="true" fitToWidth="true" styleClass="background" VBox.vgrow="ALWAYS" />
+                <HBox VBox.vgrow="ALWAYS">
+                    <children>
+                        <ScrollPane id="content" fx:id="content" fitToHeight="true" fitToWidth="true" onMouseClicked="#pageClick" styleClass="background" HBox.hgrow="ALWAYS" />
+                        <fx:include source="SceneGraph.fxml" visible="false" styleClass="non-content" maxWidth="400.0" minWidth="400.0" prefWidth="400.0" fx:id="sceneGraph"/>
+                    </children>
+                </HBox>
             </children>
         </VBox>
         <Group>

@@ -30,17 +30,19 @@ public class TextNode extends Text {
         super(x, y, text);
     }
 
-    public void applyCSS(CSSStyleDeclaration styling) {
-        String color = styling.getPropertyValue("color");
-        try {
-            Platform.runLater(() -> setFill(color.isEmpty() ? Color.BLACK : Color.web(color)));
-        } catch (IllegalArgumentException ex) {
-            System.out.println("Failed color: " + color);
-        }
-        Pair<Font, Boolean> p = Styler.getFont(styling);
-        Platform.runLater(() -> {
-            setFont(p.getKey());
-            setUnderline(p.getValue());
-        });
+    public Runnable applyCSS(CSSStyleDeclaration styling) {
+        return () -> {
+            String color = styling.getPropertyValue("color");
+            try {
+                Platform.runLater(() -> setFill(color.isEmpty() ? Color.BLACK : Color.web(color)));
+            } catch (IllegalArgumentException ex) {
+                System.out.println("Failed color: " + color);
+            }
+            Pair<Font, Boolean> p = Styler.getFont(styling);
+            Platform.runLater(() -> {
+                setFont(p.getKey());
+                setUnderline(p.getValue());
+            });
+        };
     }
 }
