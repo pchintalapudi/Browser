@@ -10,6 +10,7 @@ import pc.browser.render.css.Styler;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -27,21 +28,17 @@ public class ChildLayoutManager extends StackPane {
     }
 
     public void manage(org.jsoup.nodes.Element element) {
-        try {
-            List<DisplayType> displayTypes = element.childNodes().stream().map(styler::style)
-                    .map(StyleUtils::getDisplayType).collect(Collectors.toList());
-            DisplayType parent = StyleUtils.getDisplayType(styler.style(element));
-            switch (parent) {
-                case FLEX:
-                case INLINE_FLEX:
-                    layoutFlex(displayTypes, element.childNodes());
-                    break;
-                default:
-                    layoutStandard(displayTypes, element.childNodes());
-                    break;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        List<DisplayType> displayTypes = element.childNodes().stream().map(styler::style)
+                .map(StyleUtils::getDisplayType).collect(Collectors.toList());
+        DisplayType parent = StyleUtils.getDisplayType(styler.style(element));
+        switch (parent) {
+            case FLEX:
+            case INLINE_FLEX:
+                layoutFlex(displayTypes, element.childNodes());
+                break;
+            default:
+                layoutStandard(displayTypes, element.childNodes());
+                break;
         }
     }
 
@@ -66,10 +63,10 @@ public class ChildLayoutManager extends StackPane {
                 }
             }
             grandfather.getChildren().add(father);
-            getChildren().setAll(grandfather);
+            Platform.runLater(() -> getChildren().setAll(grandfather));
         }
     }
-    
+
     private void layoutFlex(List<DisplayType> displayTypes, List<org.jsoup.nodes.Node> nodes) {
         FlowPane grandfather = getFlowPane(Orientation.HORIZONTAL);
         for (int i = 0; i < displayTypes.size(); i++) {
@@ -78,6 +75,7 @@ public class ChildLayoutManager extends StackPane {
                 grandfather.getChildren().add(mapper.apply(nodes.get(i)));
             }
         }
+        Platform.runLater(() -> getChildren().setAll(grandfather));
     }
 
     private FlowPane getFlowPane(Orientation orientation) {
