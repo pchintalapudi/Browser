@@ -58,7 +58,6 @@ public class SceneGraph {
         ti.setExpanded(true);
         if (n instanceof Parent) {
             EasyBind.listBind(ti.getChildren(), EasyBind.map(((Parent) n).getChildrenUnmodifiable(), this::traverseTree));
-            System.out.println(n);
         }
         return ti;
     }

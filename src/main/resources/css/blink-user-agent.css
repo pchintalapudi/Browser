@@ -819,7 +819,7 @@ input[type="file" i]:focus::-webkit-file-upload-button {
 a {
     color: #0000ff;
     text-decoration: underline;
-    cursor: auto;
+    cursor: pointer;
 }
 a:-webkit-any-link:active {
     color: red;
