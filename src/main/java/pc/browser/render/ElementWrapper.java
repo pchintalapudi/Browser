@@ -11,9 +11,13 @@ import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.StackPane;
 import org.w3c.dom.css.CSSStyleDeclaration;
+import pc.browser.events.LoadEvent;
 import pc.browser.render.css.StyleUtils;
 
 /**
@@ -46,6 +50,13 @@ public class ElementWrapper extends StackPane {
 
     public Runnable applyPaintCSS(CSSStyleDeclaration styling) {
         return () -> {
+            Background background = getUserData() == null ? Background.EMPTY
+                    : StyleUtils.getCSSBackground(styling, ((org.jsoup.nodes.Element) getUserData()).baseUri());
+            Cursor cursor = StyleUtils.getCursor(styling);
+            Platform.runLater(() -> {
+                paddingBox.setBackground(background);
+                borderBox.setCursor(cursor);
+            });
         };
     }
 
@@ -150,10 +161,22 @@ public class ElementWrapper extends StackPane {
     }
 
     public void setElement(org.jsoup.nodes.Element element, Function<org.jsoup.nodes.Node, Node> mapper, Styler styler) {
+        if (element.hasAttr("href") && !element.absUrl("href").isEmpty()) {
+            borderBox.setOnMouseClicked(m -> {
+                m.consume();
+                if (m.getButton() == MouseButton.PRIMARY) {
+                    fireEvent(new LoadEvent(element.absUrl("href")));
+                }
+            });
+        } else {
+            borderBox.setOnMouseClicked(null);
+        }
         contentBox.setStyler(styler);
         contentBox.setMapper(mapper);
-        setUserData(element);
-        getProperties().put("", StyleUtils.getDisplayType(styler.style(element)));
+        Platform.runLater(() -> {
+            setUserData(element);
+            getProperties().put("", StyleUtils.getDisplayType(styler.style(element)));
+        });
         contentBox.manage(element);
     }
 }
