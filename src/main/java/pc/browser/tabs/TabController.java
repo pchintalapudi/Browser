@@ -11,6 +11,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,7 +21,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -32,6 +33,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import pc.browser.Async;
 import pc.browser.async.RenderTask;
+import pc.browser.events.URLChangeEvent;
 import pc.browser.render.HTMLElementMapper;
 import pc.browser.resources.Resources;
 import pc.browser.tabs.async.RenderPool;
@@ -82,7 +84,6 @@ public class TabController extends AnchorPane {
         this.onClose = onClose;
     }
 
-    private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
     private final BooleanProperty selectedProperty = new SimpleBooleanProperty();
 
     public final boolean isSelected() {
@@ -116,27 +117,48 @@ public class TabController extends AnchorPane {
 
     private final RenderPool pool = new RenderPool();
 
-    private void loadURL(URL url, Runnable onUnknownHost) {
+    private final List<History> history = new ArrayList<>();
+    private int index = -1;
+
+    private String loadURL(URL url) {
+        int id;
+        id = loadId.incrementAndGet();
+        try {
+            Platform.runLater(() -> setTabState(TabState.CONNECTING));
+            Document doc = Jsoup.connect(url.toExternalForm()).get();
+            fireEvent(new URLChangeEvent(url.toExternalForm()));
+            Platform.runLater(() -> {
+                loadTaskCount.set(0);
+                tabTitle.setText(doc.head().getElementsByTag("title").get(0).text());
+                setTabState(TabState.RENDERING);
+            });
+            Node n = new HTMLElementMapper((r, tt) -> renderAsync(r, id, tt, 0)).map(doc);
+            Platform.runLater(() -> sceneGraphProperty.set(n));
+            return doc.head().getElementsByTag("title").get(0).text();
+        } catch (UnknownHostException ex) {
+        } catch (IOException ex) {
+            Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
+            Platform.runLater(() -> setTabState(TabState.IDLE));
+        }
+        return null;
+    }
+
+    private void asyncLoad(URL url, boolean tracked) {
         Async.asyncStandard(() -> {
-            int id;
-            id = loadId.incrementAndGet();
-            try {
-                Platform.runLater(() -> setTabState(TabState.CONNECTING));
-                Document doc = Jsoup.connect(url.toExternalForm()).get();
-                Platform.runLater(() -> {
-                    loadTaskCount.set(0);
-                    tabTitle.setText(doc.head().getElementsByTag("title").get(0).text());
-                    setTabState(TabState.RENDERING);
-                });
-                Node n = new HTMLElementMapper((r, tt) -> renderAsync(r, id, tt, 0)).map(doc);
-                Platform.runLater(() -> sceneGraphProperty.set(n));
-            } catch (UnknownHostException ex) {
-                onUnknownHost.run();
-            } catch (IOException ex) {
-                Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);
-                Platform.runLater(() -> setTabState(TabState.IDLE));
+            if (tracked) {
+                loadTrackedURL(url);
+            } else {
+                loadURL(url);
             }
         });
+    }
+
+    private void loadTrackedURL(URL url) {
+        String title = loadURL(url);
+        if (title != null) {
+            history.subList(++index, history.size()).clear();
+            history.add(new History(title, url));
+        }
     }
 
     private void renderAsync(Runnable task, int loadId, RenderTask taskType, int priority) {
@@ -169,7 +191,7 @@ public class TabController extends AnchorPane {
     private void search(String original) {
         try {
             URL url = new URL("https://www.google.com/search?q=" + URLEncoder.encode(original, "utf-8") + "&sourceid=browser&ie=UTF-8");
-            loadURL(url, () -> search(original));
+            loadTrackedURL(url);
         } catch (MalformedURLException | UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         }
@@ -177,7 +199,10 @@ public class TabController extends AnchorPane {
 
     public void load(String trial) {
         try {
-            loadURL(new URL(trial), () -> search(trial));
+            if (!trial.contains(":")) {
+                trial = "http://" + trial;
+            }
+            asyncLoad(new URL(trial), true);
         } catch (MalformedURLException ex) {
             search(trial);
         }

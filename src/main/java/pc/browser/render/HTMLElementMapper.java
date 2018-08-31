@@ -25,7 +25,6 @@ import javafx.scene.control.ComboBox;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.async.RenderTask;
-import pc.browser.cache.ImageCache;
 import pc.browser.render.css.StyleUtils;
 import pc.browser.render.nonsemantic.ButtonElement;
 import pc.browser.render.nonsemantic.ImageElement;
@@ -105,17 +104,24 @@ public class HTMLElementMapper {
                     "textarea", "progress"));
 
     private javafx.scene.Node mapNonSemantics(org.jsoup.nodes.Element element) {
+        CSSStyleDeclaration styling = styler.style(element);
         switch (element.tagName()) {
             case "img":
                 if (element.hasAttr("src") && !element.attr("src").isEmpty() && !element.absUrl("src").isEmpty()) {
                     ImageElement ie = new ImageElement();
-                    ie.setImage(ImageCache.getImageForUrl(element.absUrl("src")));
+                    ie.setElement(element, this::map, styler);
+                    async.accept(ie.applyLayoutCSS(styling), RenderTask.LAYOUT);
+                    async.accept(ie.applyPaintCSS(styling), RenderTask.PAINT);
                     return ie;
                 } else {
                     return new Group();
                 }
             case "button":
-                return new ButtonElement(element.text());
+                ButtonElement button = new ButtonElement();
+                button.setElement(element, this::map, styler);
+                async.accept(button.applyLayoutCSS(styling), RenderTask.LAYOUT);
+                async.accept(button.applyPaintCSS(styling), RenderTask.PAINT);
+                return button;
             case "select":
                 List<String> options = retrieveOptions(element);
                 ChoiceBox<String> choices = new ChoiceBox<>(FXCollections.observableArrayList(options));
@@ -131,12 +137,9 @@ public class HTMLElementMapper {
                 return new TextAreaElement(element.text());
             case "progress":
                 ProgressElement progress = new ProgressElement();
-                if (element.hasAttr("value") && element.hasAttr("max")) {
-                    try {
-                        progress.setProgress(Double.parseDouble(element.attr("value")) / Double.parseDouble(element.attr("max")));
-                    } catch (NumberFormatException ex) {
-                    }
-                }
+                progress.setElement(element, this::map, styler);
+                async.accept(progress.applyLayoutCSS(styling), RenderTask.LAYOUT);
+                async.accept(progress.applyPaintCSS(styling), RenderTask.PAINT);
                 return progress;
             default:
                 return new Group();

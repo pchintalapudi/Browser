@@ -55,6 +55,7 @@ import javafx.util.Duration;
 import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 import pc.browser.events.LoadEvent;
+import pc.browser.events.URLChangeEvent;
 import pc.browser.tabs.TabState;
 
 /**
@@ -139,7 +140,14 @@ public class Main {
         reloadButton.disableProperty().bind(idle.map(Boolean.FALSE::equals));
         content.contentProperty().bind(EasyBind.select(focusedTab).selectObject(TabController::sceneGraphProperty));
         root.addEventHandler(LoadEvent.LOAD_EVENT, e -> {
+            root.requestFocus();
             focusedTab.get().load(e.getLoadPayload());
+        });
+        root.addEventHandler(URLChangeEvent.SET_TO_URL, e -> {
+            omnibar.setText(e.getURLString());
+            if (omnibar.isFocused()) {
+                omnibar.selectAll();
+            }
         });
     }
 
