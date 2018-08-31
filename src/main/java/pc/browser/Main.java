@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -56,6 +58,7 @@ import org.fxmisc.easybind.EasyBind;
 import org.fxmisc.easybind.monadic.MonadicBinding;
 import pc.browser.events.LoadEvent;
 import pc.browser.events.URLChangeEvent;
+import pc.browser.tabs.History;
 import pc.browser.tabs.TabState;
 
 /**
@@ -309,12 +312,43 @@ public class Main {
         } : stageHeight;
     }
 
+    private final ContextMenu backMenu = new ContextMenu(), forwardMenu = new ContextMenu();
+
     @FXML
-    private void back() {
+    private void backPress() {
+        focusedTab.get().history(focusedTab.get().past().size() - 1, true);
     }
 
     @FXML
-    private void forward() {
+    private void forwardPress() {
+        focusedTab.get().history(focusedTab.get().future().size() - 1, false);
+    }
+
+    @FXML
+    private void back(ContextMenuEvent cme) {
+        List<History> past = focusedTab.get().past();
+        Collections.reverse(past);
+        backMenu.getItems().clear();
+        for (int i = 0; i < past.size(); i++) {
+            int i0 = i;
+            MenuItem path = new MenuItem(past.get(i).getTitle());
+            path.setOnAction(e -> focusedTab.get().history(i0, true));
+            backMenu.getItems().add(path);
+        }
+        backMenu.show(backButton, cme.getScreenX(), cme.getScreenY());
+    }
+
+    @FXML
+    private void forward(ContextMenuEvent cme) {
+        List<History> future = focusedTab.get().future();
+        forwardMenu.getItems().clear();
+        for (int i = 0; i < future.size(); i++) {
+            int i0 = i;
+            MenuItem path = new MenuItem(future.get(i).getTitle());
+            path.setOnAction(e -> focusedTab.get().history(i0, false));
+            forwardMenu.getItems().add(path);
+        }
+        forwardMenu.show(forwardButton, cme.getScreenX(), cme.getScreenY());
     }
 
     @FXML

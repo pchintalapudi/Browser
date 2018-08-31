@@ -15,8 +15,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.StackPane;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.events.LoadEvent;
-import pc.browser.render.css.LayoutProperties;
-import pc.browser.render.css.PaintProperties;
+import pc.browser.render.css.properties.LayoutProperties;
+import pc.browser.render.css.properties.PaintProperties;
 import pc.browser.render.css.StyleUtils;
 
 /**

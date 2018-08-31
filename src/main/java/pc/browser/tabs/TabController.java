@@ -199,13 +199,39 @@ public class TabController extends AnchorPane {
 
     public void load(String trial) {
         try {
-            if (!trial.contains(":")) {
+            if (!trial.contains(":") && trial.contains(".")) {
                 trial = "http://" + trial;
             }
             asyncLoad(new URL(trial), true);
         } catch (MalformedURLException ex) {
             search(trial);
         }
+    }
+
+    public void history(int index, boolean past) {
+        try {
+            if (index > -1 && index < (past ? index : (history.size() - index - 1))) {
+                if (past) {
+                    this.index = index;
+                    Platform.runLater(() -> tabTitle.setText(history.get(index).getTitle()));
+                    asyncLoad(history.get(index).getUrl(), false);
+                } else {
+                    this.index += index + 1;
+                    Platform.runLater(() -> tabTitle.setText(history.get(this.index).getTitle()));
+                    asyncLoad(history.get(this.index).getUrl(), false);
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public List<History> past() {
+        return history.subList(0, index);
+    }
+
+    public List<History> future() {
+        return history.subList(index + 1, history.size());
     }
 
     private final ObjectProperty<Node> sceneGraphProperty = new SimpleObjectProperty<>();

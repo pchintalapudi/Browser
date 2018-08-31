@@ -5,6 +5,8 @@
  */
 package pc.browser.render.css;
 
+import pc.browser.render.css.properties.PaintProperties;
+import pc.browser.render.css.properties.LayoutProperties;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,9 +22,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
-import javafx.util.Pair;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.cache.ImageCache;
+import pc.browser.render.css.properties.FontProperties;
 
 /**
  *
@@ -33,7 +35,7 @@ public class StyleUtils {
     private static final Pattern lengthPattern = Pattern.compile("(\\d+(?:\\.(?:\\d+)?)?)(cm|mm|in|px|pt|pc|"
             + "em|ex|ch|rem|vw|vh|vmin|vmax|\\%)?");
 
-    public static Pair<Font, Boolean> getFont(CSSStyleDeclaration styling) {
+    public static Font getFont(CSSStyleDeclaration styling) {
         String fontFamily = styling.getPropertyValue("font-family").isEmpty() ? "Arial" : styling.getPropertyValue("font-family");
         double fontSize;
         fontSize = toPixels(styling.getPropertyValue("font-size"));
@@ -64,8 +66,7 @@ public class StyleUtils {
                 break;
         }
         FontPosture posture = styling.getPropertyValue("font-styling").equals("italics") || styling.getPropertyValue("font-styling").equals("oblique") ? FontPosture.ITALIC : FontPosture.REGULAR;
-        boolean notUnderline = styling.getPropertyValue("text-decoration-line").isEmpty() || !styling.getPropertyValue("text-decoration-line").contains("underline");
-        return new Pair<>(Font.font(fontFamily, fontWeight, posture, fontSize), !notUnderline);
+        return Font.font(fontFamily, fontWeight, posture, fontSize);
     }
 
     public static double toPixels(String value) {
@@ -186,11 +187,11 @@ public class StyleUtils {
                 return Cursor.SE_RESIZE;
         }
     }
-    
+
     public static LayoutProperties getLayoutProperties(CSSStyleDeclaration styling) {
         return new LayoutProperties(getMargins(styling), getPaddings(styling));
     }
-    
+
     public static PaintProperties getPaintProperties(CSSStyleDeclaration styling, String baseUri) {
         return new PaintProperties(getCSSBackground(styling, baseUri), Border.EMPTY, getCursor(styling));
     }
@@ -291,5 +292,12 @@ public class StyleUtils {
             margins[3] = StyleUtils.toPixels(styling.getPropertyValue("margin-left").trim());
         }
         return new Insets(margins[0], margins[1], margins[2], margins[3]);
+    }
+
+    public static FontProperties getFontProperties(CSSStyleDeclaration styling) {
+        return new FontProperties(getFont(styling), styling.getPropertyValue("color").isEmpty()
+                ? Color.BLACK : Color.web(styling.getPropertyValue("color")),
+                !styling.getPropertyValue("text-decoration-line").isEmpty()
+                && styling.getPropertyValue("text-decoration-line").contains("underline"));
     }
 }

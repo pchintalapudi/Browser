@@ -14,8 +14,8 @@ import org.jsoup.nodes.Node;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.cache.ImageCache;
 import pc.browser.render.RenderedElement;
-import pc.browser.render.css.LayoutProperties;
-import pc.browser.render.css.PaintProperties;
+import pc.browser.render.css.properties.LayoutProperties;
+import pc.browser.render.css.properties.PaintProperties;
 import pc.browser.render.css.StyleUtils;
 import pc.browser.render.css.Styler;
 

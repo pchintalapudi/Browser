@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pc.browser.render.css;
+package pc.browser.render.css.properties;
 
 import javafx.geometry.Insets;
 

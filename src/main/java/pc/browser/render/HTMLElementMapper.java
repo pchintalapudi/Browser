@@ -116,12 +116,6 @@ public class HTMLElementMapper {
                 } else {
                     return new Group();
                 }
-            case "button":
-                ButtonElement button = new ButtonElement();
-                button.setElement(element, this::map, styler);
-                async.accept(button.applyLayoutCSS(styling), RenderTask.LAYOUT);
-                async.accept(button.applyPaintCSS(styling), RenderTask.PAINT);
-                return button;
             case "select":
                 List<String> options = retrieveOptions(element);
                 ChoiceBox<String> choices = new ChoiceBox<>(FXCollections.observableArrayList(options));
@@ -132,7 +126,18 @@ public class HTMLElementMapper {
                 ComboBox<String> combo = new ComboBox<>(FXCollections.observableArrayList(options));
                 return combo;
             case "input":
-                return new TextInputElement(element.hasAttr("value") ? element.attr("value") : "");
+                if (!element.attr("type").equalsIgnoreCase("submit")) {
+                    return element.attr("type").equalsIgnoreCase("hidden") ? new Group()
+                            : new TextInputElement(element.hasAttr("value") ? element.attr("value") : "");
+                } else {
+                    element.text(element.attr("value"));
+                }
+            case "button":
+                ButtonElement button = new ButtonElement();
+                button.setElement(element, this::map, styler);
+                async.accept(button.applyLayoutCSS(styling), RenderTask.LAYOUT);
+                async.accept(button.applyPaintCSS(styling), RenderTask.PAINT);
+                return button;
             case "textarea":
                 return new TextAreaElement(element.text());
             case "progress":

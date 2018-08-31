@@ -68,7 +68,7 @@ public class ChildLayoutManager extends StackPane {
     }
 
     private void layoutFlex(List<DisplayType> displayTypes, List<org.jsoup.nodes.Node> nodes) {
-        FlowPane grandfather = getFlowPane(Orientation.HORIZONTAL);
+        HBox grandfather = new HBox();
         for (int i = 0; i < displayTypes.size(); i++) {
             DisplayType dt = displayTypes.get(i);
             if (dt != DisplayType.NONE) {
