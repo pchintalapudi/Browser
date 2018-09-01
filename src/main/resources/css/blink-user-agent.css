@@ -273,6 +273,9 @@ ol ul, ul ol, ul ul, ol ol {
     margin-left: 0;
     margin-right: 0
 }
+br {
+    display:block;
+}
 /* form elements 
 form {
     display: block;

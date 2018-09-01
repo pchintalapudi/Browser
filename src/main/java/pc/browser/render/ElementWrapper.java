@@ -60,6 +60,7 @@ public class ElementWrapper extends StackPane implements RenderedElement {
                 paddingBox.setBackground(props.getBackground());
                 borderBox.setBorder(props.getBorder());
                 borderBox.setCursor(props.getCursor());
+                borderBox.setOpacity(props.getOpacity());
             });
         };
     }

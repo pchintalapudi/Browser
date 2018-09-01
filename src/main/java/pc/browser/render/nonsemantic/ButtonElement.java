@@ -50,6 +50,7 @@ public class ButtonElement extends StackPane implements RenderedElement {
                 actualButton.setBackground(props.getBackground());
                 actualButton.setBorder(props.getBorder());
                 actualButton.setCursor(props.getCursor());
+                actualButton.setOpacity(props.getOpacity());
             });
         };
     }

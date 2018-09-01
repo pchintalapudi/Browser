@@ -60,16 +60,23 @@ public class HTMLElementMapper {
                     new StringReader(document.getElementsByTag("style").text())), null, null));
         } catch (IOException ex) {
         }
-        return map(document.body());
+        try {
+            return map(document.body());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException(ex);
+        }
     }
 
     private javafx.scene.Node map(org.jsoup.nodes.Node node) {
         CSSStyleDeclaration style = styler.style(node);
         if (StyleUtils.getDisplayType(style) != DisplayType.NONE) {
             if (node instanceof org.jsoup.nodes.TextNode) {
-                TextNode tn = new TextNode(((org.jsoup.nodes.TextNode) node).text());
+                TextNode tn = new TextNode();
+                tn.setElement(node, this::map, styler);
                 tn.setUserData(node);
-                async.accept(tn.applyCSS(style), RenderTask.PAINT);
+                async.accept(tn.applyLayoutCSS(style), RenderTask.LAYOUT);
+                async.accept(tn.applyPaintCSS(style), RenderTask.PAINT);
                 return tn;
             } else if (node instanceof org.jsoup.nodes.Element) {
                 org.jsoup.nodes.Element element = (org.jsoup.nodes.Element) node;

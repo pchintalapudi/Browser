@@ -14,6 +14,7 @@ import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import pc.browser.render.css.StyleUtils;
@@ -49,6 +50,7 @@ public class ChildLayoutManager extends StackPane {
         if (displayTypes.size() > 0) {
             VBox grandfather = new VBox();
             HBox father = new HBox();
+            VBox.setVgrow(father, Priority.ALWAYS);
             father.getChildren().add(mapper.apply(nodes.get(0)));
             for (int i = 1; i < displayTypes.size(); i++) {
                 DisplayType dt = displayTypes.get(i);
@@ -58,6 +60,7 @@ public class ChildLayoutManager extends StackPane {
                     } else {
                         grandfather.getChildren().add(father);
                         father = new HBox();
+                        VBox.setVgrow(father, Priority.ALWAYS);
                         father.getChildren().add(mapper.apply(nodes.get(i)));
                     }
                 }
@@ -75,6 +78,7 @@ public class ChildLayoutManager extends StackPane {
                 grandfather.getChildren().add(mapper.apply(nodes.get(i)));
             }
         }
+        VBox.setVgrow(grandfather, Priority.ALWAYS);
         Platform.runLater(() -> getChildren().setAll(grandfather));
     }
 

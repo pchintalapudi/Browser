@@ -48,6 +48,7 @@ public class ProgressElement extends StackPane implements RenderedElement {
                 progressBar.setCursor(props.getCursor());
                 progressBar.setBorder(props.getBorder());
                 progressBar.setBackground(props.getBackground());
+                progressBar.setOpacity(props.getOpacity());
             });
         };
     }

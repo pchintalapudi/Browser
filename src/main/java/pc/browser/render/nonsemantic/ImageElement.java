@@ -53,6 +53,7 @@ public class ImageElement extends StackPane implements RenderedElement {
                 paddingBox.setBorder(props.getBorder());
                 paddingBox.setBackground(props.getBackground());
                 paddingBox.setCursor(props.getCursor());
+                paddingBox.setOpacity(props.getOpacity());
             });
         };
     }

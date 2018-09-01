@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -22,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.cache.ImageCache;
 import pc.browser.render.css.properties.FontProperties;
@@ -193,7 +195,23 @@ public class StyleUtils {
     }
 
     public static PaintProperties getPaintProperties(CSSStyleDeclaration styling, String baseUri) {
-        return new PaintProperties(getCSSBackground(styling, baseUri), Border.EMPTY, getCursor(styling));
+        return new PaintProperties(getCSSBackground(styling, baseUri), Border.EMPTY, getCursor(styling), getOpacity(styling));
+    }
+
+    private static double getOpacity(CSSStyleDeclaration styling) {
+        double realOpacity;
+        try {
+            realOpacity = Math.max(Math.min(1, Double.parseDouble(styling.getPropertyValue("opacity"))), 0);
+        } catch (NumberFormatException ex) {
+            realOpacity = 1;
+        }
+        switch (styling.getPropertyValue("visibility")) {
+            case "hidden":
+            case "collapse":
+                realOpacity = 0;
+                break;
+        }
+        return realOpacity;
     }
 
     private static Insets getPaddings(CSSStyleDeclaration styling) {
@@ -298,6 +316,42 @@ public class StyleUtils {
         return new FontProperties(getFont(styling), styling.getPropertyValue("color").isEmpty()
                 ? Color.BLACK : Color.web(styling.getPropertyValue("color")),
                 !styling.getPropertyValue("text-decoration-line").isEmpty()
-                && styling.getPropertyValue("text-decoration-line").contains("underline"));
+                && styling.getPropertyValue("text-decoration-line").contains("underline"),
+                getTextAlignment(styling), getVAlign(styling));
+    }
+
+    private static TextAlignment getTextAlignment(CSSStyleDeclaration styling) {
+        switch (styling.getPropertyValue("text-align").toLowerCase()) {
+            case "start":
+            case "left":
+            default:
+                return TextAlignment.LEFT;
+            case "right":
+            case "end":
+                return TextAlignment.RIGHT;
+            case "center":
+                return TextAlignment.CENTER;
+            case "justify":
+                return TextAlignment.JUSTIFY;
+        }
+    }
+
+    private static Pos getVAlign(CSSStyleDeclaration styling) {
+        switch (styling.getPropertyValue("vertical-align").toLowerCase()) {
+            case "baseline":
+                return Pos.BASELINE_LEFT;
+            case "sub":
+                return Pos.BASELINE_LEFT;
+            case "text-top":
+            case "super":
+            case "top":
+                return Pos.TOP_LEFT;
+            case "middle":
+                return Pos.CENTER_LEFT;
+            case "text-bottom":
+            case "bottom":
+            default:
+                return Pos.BOTTOM_LEFT;
+        }
     }
 }

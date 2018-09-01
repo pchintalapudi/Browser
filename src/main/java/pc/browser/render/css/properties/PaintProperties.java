@@ -18,11 +18,13 @@ public class PaintProperties {
     private final Background background;
     private final Border border;
     private final Cursor cursor;
+    private final double opacity;
 
-    public PaintProperties(Background background, Border border, Cursor cursor) {
+    public PaintProperties(Background background, Border border, Cursor cursor, double opacity) {
         this.background = background;
         this.border = border;
         this.cursor = cursor;
+        this.opacity = opacity;
     }
 
     /**
@@ -44,5 +46,9 @@ public class PaintProperties {
      */
     public Cursor getCursor() {
         return cursor;
+    }
+
+    public double getOpacity() {
+        return opacity;
     }
 }
