@@ -39,12 +39,14 @@ import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -577,6 +579,24 @@ public class Main {
     private void trackLighting(MouseEvent m) {
         lighting.setCenterX(m.getX());
         lighting.setCenterY(m.getY());
+    }
+
+    @FXML
+    private void omnibarDragOver(DragEvent d) {
+        if (d.getGestureSource() != omnibar && d.getDragboard().hasUrl()) {
+            d.acceptTransferModes(TransferMode.ANY);
+        }
+    }
+    
+    @FXML
+    private void omnibarDragDrop(DragEvent d) {
+        if (d.getDragboard().hasUrl()) {
+            omnibar.setText(d.getDragboard().getUrl());
+            load();
+            d.setDropCompleted(true);
+        } else {
+            d.setDropCompleted(false);
+        }
     }
 
     private Stage getStage() {

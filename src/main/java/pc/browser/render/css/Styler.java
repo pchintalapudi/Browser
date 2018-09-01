@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
+import org.jsoup.select.Selector.SelectorParseException;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSImportRule;
 import org.w3c.dom.css.CSSRule;
@@ -85,7 +86,13 @@ public final class Styler {
             Element styler = n instanceof Element ? (Element) n : null;
             CSSStyleDeclaration selfStyle = styler == null ? new CSSStyleDeclarationImpl() : rules.stream().filter(r
                     -> Arrays.stream(r.getSelectorText().trim().split(",\\s*"))
-                            .filter(s -> !s.contains(":")).anyMatch(styler::is))
+                            .filter(s -> !s.contains(":")).anyMatch(s -> {
+                        try {
+                            return styler.is(s);
+                        } catch (SelectorParseException ex) {
+                            return false;
+                        }
+                    }))
                     .map(CSSStyleRule::getStyle)
                     .reduce(new CSSStyleDeclarationImpl(),
                             (d1, d2) -> {

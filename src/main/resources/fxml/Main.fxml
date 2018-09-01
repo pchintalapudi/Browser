@@ -99,7 +99,7 @@
                                                                 </Label>
                                                             </children>
                                                         </StackPane>
-                                                        <TextField id="omnibar" fx:id="omnibar" onAction="#load" HBox.hgrow="ALWAYS" />
+                                                        <TextField id="omnibar" fx:id="omnibar" onAction="#load" onDragDropped="#omnibarDragDrop" onDragOver="#omnibarDragOver" HBox.hgrow="ALWAYS" />
                                                     </children>
                                                 </HBox>
                                                 <HBox fx:id="extensionButtons" alignment="CENTER_RIGHT" prefWidth="200.0" />

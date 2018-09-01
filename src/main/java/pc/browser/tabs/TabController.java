@@ -29,9 +29,11 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import org.jsoup.Jsoup;
+import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 import pc.browser.Async;
 import pc.browser.async.RenderTask;
+import pc.browser.cache.ImageCache;
 import pc.browser.events.URLChangeEvent;
 import pc.browser.render.HTMLElementMapper;
 import pc.browser.resources.Resources;
@@ -132,6 +134,10 @@ public class TabController extends AnchorPane {
                 sceneGraphProperty.set(n);
             });
             return doc.head().getElementsByTag("title").get(0).text();
+        } catch (UnsupportedMimeTypeException ex) {
+            if ("image/jpeg".equals(ex.getMimeType())) {
+                Platform.runLater(() -> sceneGraphProperty.set(new ImageView(ImageCache.getImageForUrl(ex.getUrl()))));
+            }
         } catch (UnknownHostException ex) {
         } catch (IOException ex) {
             Logger.getLogger(TabController.class.getName()).log(Level.SEVERE, null, ex);

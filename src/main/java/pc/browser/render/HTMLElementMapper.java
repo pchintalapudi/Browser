@@ -10,8 +10,10 @@ import com.steadystate.css.parser.SACParserCSS3;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import pc.browser.render.css.DisplayType;
 import pc.browser.render.css.Styler;
@@ -41,6 +43,7 @@ public class HTMLElementMapper {
 
     private Styler styler = new Styler();
     private final BiConsumer<Runnable, RenderTask> async;
+    private final Map<org.jsoup.nodes.Node, javafx.scene.Node> nodeMap = new HashMap<>();
 
     public HTMLElementMapper(BiConsumer<Runnable, RenderTask> async) {
         this.async = async;

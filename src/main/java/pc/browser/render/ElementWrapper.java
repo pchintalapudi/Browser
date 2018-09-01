@@ -10,7 +10,9 @@ import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Region;
 import javafx.scene.text.TextFlow;
 import org.w3c.dom.css.CSSStyleDeclaration;
@@ -74,6 +76,11 @@ public class ElementWrapper extends TextFlow implements RenderedElement {
                     if (m.getButton() == MouseButton.PRIMARY) {
                         fireEvent(new LoadEvent(element.absUrl("href")));
                     }
+                });
+                borderBox.setOnDragDetected(m -> {
+                    ClipboardContent cc = new ClipboardContent();
+                    cc.putUrl(element.absUrl("href"));
+                    borderBox.startDragAndDrop(TransferMode.ANY).setContent(cc);
                 });
             } else {
                 borderBox.setOnMouseClicked(null);

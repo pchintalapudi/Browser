@@ -9,6 +9,9 @@ import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.StackPane;
 import org.jsoup.nodes.Node;
 import org.w3c.dom.css.CSSStyleDeclaration;
@@ -32,6 +35,15 @@ public class ImageElement extends StackPane implements RenderedElement {
         super.getChildren().add(paddingBox);
         super.setAlignment(Pos.TOP_LEFT);
         paddingBox.setAlignment(Pos.TOP_LEFT);
+        imageView.setOnDragDetected(m -> {
+            if (m.isPrimaryButtonDown()) {
+                ClipboardContent cc = new ClipboardContent();
+                cc.putImage(imageView.getImage());
+                Dragboard db = imageView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+                db.setContent(cc);
+                db.setDragView(imageView.getImage());
+            }
+        });
     }
 
     @Override
