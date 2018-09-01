@@ -9,10 +9,10 @@ import pc.browser.render.css.Styler;
 import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Region;
+import javafx.scene.text.TextFlow;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import pc.browser.events.LoadEvent;
 import pc.browser.render.css.properties.LayoutProperties;
@@ -23,18 +23,14 @@ import pc.browser.render.css.StyleUtils;
  *
  * @author prem
  */
-public class ElementWrapper extends StackPane implements RenderedElement {
+public class ElementWrapper extends TextFlow implements RenderedElement {
 
     private final ChildLayoutManager contentBox = new ChildLayoutManager();
-    private final StackPane paddingBox = new StackPane(contentBox),
-            borderBox = new StackPane(paddingBox), marginBox = new StackPane(borderBox);
+    private final TextFlow paddingBox = new TextFlow(contentBox),
+            borderBox = new TextFlow(paddingBox), marginBox = new TextFlow(borderBox);
 
     public ElementWrapper() {
         super.getChildren().add(marginBox);
-        setAlignment(Pos.TOP_LEFT);
-        marginBox.setAlignment(Pos.TOP_LEFT);
-        borderBox.setAlignment(Pos.TOP_LEFT);
-        contentBox.setAlignment(Pos.TOP_LEFT);
     }
 
     public ObservableList<Node> getDOMChildren() {
@@ -48,6 +44,10 @@ public class ElementWrapper extends StackPane implements RenderedElement {
             Platform.runLater(() -> {
                 marginBox.setPadding(props.getMargins());
                 paddingBox.setPadding(props.getPaddings());
+                Region r = props.isContentBox() ? contentBox : borderBox;
+                r.setMinSize(props.getMinWidth(), props.getMinHeight());
+                r.setPrefSize(props.getWidth(), props.getHeight());
+                r.setMaxSize(props.getMaxWidth(), props.getMaxHeight());
             });
         };
     }

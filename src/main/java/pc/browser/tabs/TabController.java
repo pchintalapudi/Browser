@@ -28,7 +28,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import pc.browser.Async;
@@ -45,10 +44,6 @@ import pc.browser.tabs.async.RenderPool;
  */
 public class TabController extends AnchorPane {
 
-    @FXML
-    private HBox tabBody;
-    @FXML
-    private HBox tabContent;
     @FXML
     private ImageView icon;
     @FXML
@@ -126,14 +121,16 @@ public class TabController extends AnchorPane {
         try {
             Platform.runLater(() -> setTabState(TabState.CONNECTING));
             Document doc = Jsoup.connect(url.toExternalForm()).get();
-            fireEvent(new URLChangeEvent(url.toExternalForm()));
             Platform.runLater(() -> {
+                fireEvent(new URLChangeEvent(url.toExternalForm()));
                 loadTaskCount.set(0);
                 tabTitle.setText(doc.head().getElementsByTag("title").get(0).text());
                 setTabState(TabState.RENDERING);
             });
             Node n = new HTMLElementMapper((r, tt) -> renderAsync(r, id, tt, 0)).map(doc);
-            Platform.runLater(() -> sceneGraphProperty.set(n));
+            Platform.runLater(() -> {
+                sceneGraphProperty.set(n);
+            });
             return doc.head().getElementsByTag("title").get(0).text();
         } catch (UnknownHostException ex) {
         } catch (IOException ex) {

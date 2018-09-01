@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.geometry.Insets;
+import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.layout.Background;
@@ -39,8 +40,8 @@ public class StyleUtils {
 
     public static Font getFont(CSSStyleDeclaration styling) {
         String fontFamily = styling.getPropertyValue("font-family").isEmpty() ? "Arial" : styling.getPropertyValue("font-family");
-        double fontSize;
-        fontSize = toPixels(styling.getPropertyValue("font-size"));
+        double fontSize = toPixels(styling.getPropertyValue("font-size"));
+        fontSize = fontSize == -1 ? 16 : fontSize;
         FontWeight fontWeight;
         String value = styling.getPropertyValue("font-weight").toLowerCase();
         switch (value) {
@@ -100,10 +101,10 @@ public class StyleUtils {
                     return 0;
                 }
             } catch (NumberFormatException ex) {
-                return 16;
+                return -1;
             }
         } else {
-            return 16;
+            return -1;
         }
     }
 
@@ -191,7 +192,17 @@ public class StyleUtils {
     }
 
     public static LayoutProperties getLayoutProperties(CSSStyleDeclaration styling) {
-        return new LayoutProperties(getMargins(styling), getPaddings(styling));
+        return new LayoutProperties(getMargins(styling), getPaddings(styling),
+                getTripleProps(styling, "width"), getTripleProps(styling, "height"),
+                !"border-box".equals(styling.getPropertyValue("box-sizing"))
+        );
+    }
+
+    private static Point3D getTripleProps(CSSStyleDeclaration styling, String type) {
+        double min = parseNumber(styling.getPropertyValue("min-" + type), -1);
+        double pref = parseNumber(styling.getPropertyValue(type), -1);
+        double max = parseNumber(styling.getPropertyValue("max-" + type), -1);
+        return new Point3D(min, pref, max);
     }
 
     public static PaintProperties getPaintProperties(CSSStyleDeclaration styling, String baseUri) {
@@ -201,7 +212,7 @@ public class StyleUtils {
     private static double getOpacity(CSSStyleDeclaration styling) {
         double realOpacity;
         try {
-            realOpacity = Math.max(Math.min(1, Double.parseDouble(styling.getPropertyValue("opacity"))), 0);
+            realOpacity = Math.max(Math.min(1, parseNumber(styling.getPropertyValue("opacity"), 1)), 0);
         } catch (NumberFormatException ex) {
             realOpacity = 1;
         }
@@ -352,6 +363,17 @@ public class StyleUtils {
             case "bottom":
             default:
                 return Pos.BOTTOM_LEFT;
+        }
+    }
+
+    private static double parseNumber(String value, double standard) {
+        try {
+            if (value.isEmpty()) {
+                return standard;
+            }
+            return Double.parseDouble(value);
+        } catch (NumberFormatException ex) {
+            return standard;
         }
     }
 }

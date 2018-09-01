@@ -152,6 +152,7 @@ public class Main {
                 omnibar.selectAll();
             }
         });
+        content.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
     }
 
     @FXML
